@@ -1,0 +1,27 @@
+{
+  "name": "astro-sanity-multi-page-starter",
+  "author": {
+    "name": "Marta Zaorska",
+    "email": "marta.zaorska2@gmail.com",
+    "url": "https://github.com/MartaZaorska"
+  },
+  "private": true,
+  "scripts": {
+    "build": "dotenv -- turbo build",
+    "build:astro": "dotenv -- turbo build --filter=astro-app",
+    "dev": "dotenv -- turbo dev",
+    "lint": "dotenv -- turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+  },
+  "devDependencies": {
+    "dotenv-cli": "^8.0.0",
+    "turbo": "^2.5.3"
+  },
+  "packageManager": "bun@1.2.5",
+  "engines": {
+    "node": ">=18"
+  },
+  "workspaces": [
+    "apps/*"
+  ]
+}
