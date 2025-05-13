@@ -1,0 +1,101 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import pageFetch from '@/utils/page.fetch';
+import Breadcrumbs from '@/components/ui/Breadcrumbs.astro';
+import PortableText, { PortableTextQuery, type PortableTextValue } from '@/components/ui/portable-text';
+
+const data = await pageFetch<{
+  heading: PortableTextValue;
+  paragraph?: PortableTextValue;
+  content: PortableTextValue;
+}>({
+  slug: '/polityka-prywatnosci',
+  additionalQuery: `
+    ${PortableTextQuery('heading')}
+    ${PortableTextQuery('paragraph')}
+    ${PortableTextQuery('content')}
+  `
+});
+
+if(!data) return Astro.rewrite('/404');
+
+const { page: { slug, name, heading, paragraph, content }, metadata } = data;
+---
+
+<Layout
+  {...metadata}
+  hideNavigation={true}
+>
+  <div class='PrivacyPolicy max-width'>
+    <Breadcrumbs data={[{ name, path: slug }]} />
+    <header>
+      <PortableText
+        value={heading}
+        heading='h1'
+      />
+      {paragraph && <PortableText value={paragraph} />}
+    </header>
+    <PortableText
+      wrapperTag='div'
+      class='content'
+      value={content}
+    />
+  </div>
+</Layout>
+<style lang='scss'>
+  .PrivacyPolicy {
+    margin: 3rem auto;
+    max-width: 48rem;
+
+    header {
+      display: grid;
+      gap: 0.5rem;
+      margin: 2rem 0;
+    }
+
+    .content {
+      counter-reset: section;
+      :global(h2) {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+
+        &:not(:first-child) {
+          margin-top: 3rem;
+        }
+
+        &::before {
+          counter-increment: section;
+          font-size: 1rem;
+          content: counter(section);
+          font-weight: 300;
+          flex-shrink: 0;
+          width: 2.5rem;
+          height: 2.5rem;
+          border-radius: 50%;
+          border: 1px solid var(--neutral-500, #545966);
+          display: grid;
+          place-items: center;
+          user-select: none;
+        }
+      }
+
+      :global(> *:not(h2)) {
+        padding-left: 3.5rem;
+
+        &:not(:first-child, ul) {
+          margin-top: 1.25rem;
+        }
+      }
+
+      :global(> ul) {
+        display: grid;
+        gap: 0.375rem;
+        &:not(:first-child) {
+          margin-top: 0.75rem;
+        }
+      }
+    }
+  }
+</style>

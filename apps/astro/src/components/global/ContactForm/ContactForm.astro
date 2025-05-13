@@ -1,0 +1,194 @@
+---
+import PortableText, { PortableTextQuery, type PortableTextValue } from '@/components/ui/portable-text';
+import Form from './Form.tsx';
+import Button from '@/components/ui/Button';
+import Loader from '@/components/ui/Loader.astro';
+
+export const ContactFormQuery = `
+  _type == "ContactForm" => {
+    ${PortableTextQuery('heading')}
+    ${PortableTextQuery('paragraph')}
+    formStates {
+      success {
+        ${PortableTextQuery('heading')}
+        ${PortableTextQuery('paragraph')}
+      },
+      error {
+        ${PortableTextQuery('heading')}
+        ${PortableTextQuery('paragraph')}
+      }
+    },
+    "email": *[_type == "global"][0].email,
+    "tel": *[_type == "global"][0].tel
+  },
+`;
+
+export type Props = {
+  index: number;
+  sectionId?: string;
+  heading: PortableTextValue;
+  paragraph: PortableTextValue;
+  formStates: {
+    success: {
+      heading: PortableTextValue;
+      paragraph: PortableTextValue;
+    };
+    error: {
+      heading: PortableTextValue;
+      paragraph: PortableTextValue;
+    };
+  };
+  email: string;
+  tel?: string;
+};
+
+const { index, sectionId, heading, paragraph, formStates, email, tel } = Astro.props;
+---
+
+<section
+  id={sectionId}
+  class='ContactForm max-width'
+>
+  <header>
+    <PortableText
+      value={heading}
+      heading={index === 0 ? 'h1' : 'h2'}
+    />
+    <PortableText value={paragraph} />
+    <div class='tel-email'>
+      {tel && <a class='link' href={`tel:${tel}`}>{tel}</a>}
+      <a
+        class='link'
+        href={`mailto:${email}`}
+        >{email}</a
+      >
+    </div>
+  </header>
+  <Form client:load>
+    <Button
+      class='submit'
+      type='submit'
+      >Wyślij Wiadomość</Button
+    >
+    <Loader class='loader' />
+    <div class='success-state'>
+      <PortableText
+        value={formStates.success.heading}
+        heading={index === 0 ? 'h2' : 'h3'}
+      />
+      <PortableText value={formStates.success.paragraph} />
+    </div>
+    <div class='error-state'>
+      <PortableText
+        value={formStates.error.heading}
+        heading={index === 0 ? 'h2' : 'h3'}
+      />
+      <PortableText value={formStates.error.paragraph} />
+      <Button
+        type='button'
+        class='try-again'
+        >Spróbuj ponownie</Button
+      >
+    </div>
+  </Form>
+</section>
+<style lang='scss'>
+  .ContactForm {
+    margin: 5rem auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1.5rem;
+
+    header {
+      max-width: 35rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1.5rem;
+      align-items: start;
+      .tel-email {
+        display: flex;
+        gap: 1rem;
+      }
+    }
+  }
+
+  :global(form) {
+    width: min(100%, 35rem);
+    position: relative;
+    min-height: 366px;
+
+    .loader {
+      display: none;
+    }
+
+    .success-state {
+      display: none;
+      align-content: center;
+      justify-items: center;
+      gap: 0.5rem;
+      height: 100%;
+      h2,
+      h3 {
+        color: var(--success-400);
+      }
+    }
+
+    .error-state {
+      display: none;
+      align-content: center;
+      justify-items: center;
+      gap: 0.5rem;
+      height: 100%;
+      h2,
+      h3 {
+        color: var(--error-400);
+      }
+
+      button {
+        margin-top: 1rem;
+      }
+    }
+
+    &[data-status='success'] {
+      .success-state {
+        display: grid;
+      }
+    }
+
+    &[data-status='error'] {
+      .error-state {
+        display: grid;
+      }
+    }
+
+    &[data-status='loading'] {
+      :global(> *:not(astro-slot)),
+      .submit {
+        opacity: 0.1;
+        cursor: none;
+        pointer-events: none;
+      }
+
+      .loader {
+        display: grid;
+      }
+    }
+
+    &[data-status='success'],
+    &[data-status='error'] {
+      :global(> *:not(astro-slot)),
+      .submit {
+        display: none;
+      }
+    }
+  }
+</style>
+<script>
+  document.querySelectorAll<HTMLDivElement>('.ContactForm').forEach(section => {
+    section.querySelector<HTMLButtonElement>('.try-again')!.addEventListener('click', () => {
+      document.dispatchEvent(new CustomEvent('Contact-TryAgain'));
+    });
+  });
+</script>

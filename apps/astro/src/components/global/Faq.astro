@@ -1,0 +1,200 @@
+---
+import PortableText, { PortableTextQuery, type PortableTextValue } from '@/components/ui/portable-text';
+import FaqSchema from '@/schema/FaqSchema.astro';
+
+export const FaqQuery = `
+  _type == "Faq" => {
+    ${PortableTextQuery('heading')}
+    faqItems[]->{
+       ${PortableTextQuery('question')}
+       ${PortableTextQuery('answer')}
+       "schemaAnswer": answer
+    }
+  },
+`;
+
+type Props = {
+  index: number;
+  sectionId?: string;
+  heading: PortableTextValue;
+  faqItems: { question: PortableTextValue; answer: PortableTextValue; schemaAnswer: PortableTextValue }[];
+};
+
+const { index, sectionId, heading, faqItems } = Astro.props;
+---
+
+<FaqSchema data={faqItems} />
+<section
+  id={sectionId}
+  class='Faq max-width'
+>
+  <header>
+    <PortableText
+      value={heading}
+      heading={index === 0 ? 'h1' : 'h2'}
+    />
+  </header>
+  <div class='list'>
+    {
+      faqItems.map(({ question, answer }, i) => (
+        <details
+          data-expanded={i === 0 ? 'true' : 'false'}
+          {...(i === 0 ? { open: true } : {})}
+        >
+          <summary>
+            <PortableText value={question} />
+            <div class='icon' />
+          </summary>
+          <div class='content'>
+            <PortableText
+              wrapperTag='div'
+              value={answer}
+            />
+          </div>
+        </details>
+      ))
+    }
+  </div>
+</section>
+
+<style lang='scss'>
+  .Faq {
+    padding: 4rem 0;
+    max-width: 48rem;
+    margin: 0 auto;
+
+    header {
+      margin-bottom: 2rem;
+    }
+
+    details {
+      --padding-block-details: clamp(0.75rem, calc(12vw / 3.6), 1.75rem);
+      --padding-inline-details: 1rem;
+      overflow: hidden;
+
+      &:not(:last-child) {
+        border-bottom: 1px solid var(--neutral-200);
+      }
+
+      summary {
+        padding: var(--padding-block-details) var(--padding-inline-details);
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+
+        > :first-child {
+          flex-grow: 1;
+        }
+
+        .icon {
+          flex-shrink: 0;
+          position: relative;
+          flex-shrink: 0;
+          width: 1.25rem;
+          height: 1.25rem;
+          display: grid;
+          place-items: center;
+          transform-origin: center;
+          transition: transform 250ms;
+
+          &::before,
+          &::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            border: 1px solid var(--neutral-600);
+            border-radius: 100vmax;
+            transform-origin: center;
+            transition: transform 0.2s;
+          }
+
+          &::before {
+            transform: rotate(90deg);
+          }
+        }
+      }
+
+      .content {
+        overflow: hidden;
+        max-height: 0px;
+        transition: max-height 500ms var(--easing);
+        padding: 0 var(--padding-inline-details);
+        :global(> :last-child) {
+          margin-bottom: var(--padding-block-details);
+        }
+
+        :global(a) {
+          color: var(--neutral-600);
+          transition: visibility 0s 0s;
+          &:focus-visible {
+            outline-offset: 0;
+          }
+        }
+      }
+
+      &:first-child .content {
+        max-height: none;
+      }
+
+      &[data-expanded='false'] {
+        .content :global(a) {
+          visibility: hidden;
+          transition: visibility 0s 0.35s;
+        }
+      }
+
+      &[data-expanded='true'] {
+        .icon {
+          transform: rotate(45deg);
+        }
+
+        .content {
+          :global(a) {
+            visibility: visible;
+          }
+        }
+      }
+
+      &:has(summary:focus-visible) {
+        outline: 1px solid var(--neutral-600);
+        outline-offset: 0;
+        summary {
+          outline: none;
+        }
+      }
+    }
+  }
+</style>
+<script>
+  function closePanel(detailsElement: HTMLDetailsElement) {
+    if (!detailsElement.open) return;
+    const content = detailsElement.querySelector<HTMLDivElement>('.content');
+    if (!content) return;
+    requestAnimationFrame(() => (content.style.maxHeight = `0px`));
+    detailsElement.dataset.expanded = 'false';
+    content.addEventListener('transitionend', () => (detailsElement.open = false), { once: true });
+  }
+
+  document.querySelectorAll('.Faq').forEach(faqSection => {
+    const detailsItems = faqSection.querySelectorAll('details');
+
+    detailsItems.forEach(details => {
+      const summary = details.querySelector<HTMLDivElement>('summary');
+      const content = details.querySelector<HTMLDivElement>('.content');
+      if (!summary || !content) return;
+
+      if (details.open) content.style.maxHeight = `${content.scrollHeight}px`;
+
+      summary.addEventListener('click', e => {
+        e.preventDefault();
+        const isOpen = details.open;
+        faqSection.querySelectorAll<HTMLDetailsElement>('details[open]').forEach(closePanel);
+        if (!isOpen) {
+          details.dataset.expanded = 'true';
+          details.open = true;
+          requestAnimationFrame(() => (content.style.maxHeight = `${content.scrollHeight}px`));
+        }
+      });
+    });
+  });
+</script>

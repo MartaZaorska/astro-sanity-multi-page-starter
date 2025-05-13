@@ -1,0 +1,64 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import sanityFetch from '@/utils/sanity.fetch';
+import pageFetch from '@/utils/page.fetch';
+import Components from '@/components/Components.astro';
+import Content, { ContentQuery, type ContentProps } from '@/components/Blog/Post/index.astro';
+import BreadcrumbsSchema from '@/schema/BreadcrumbsSchema.astro';
+import BlogPostingSchema from '@/schema/BlogPostingSchema.astro';
+
+const slugPrefix = '/blog/';
+
+export async function getStaticPaths() {
+  const blogPosts = await sanityFetch<string[]>({
+    query: `*[_type == 'BlogPost_Collection'][].slug.current`,
+  });
+  return blogPosts?.map(slug => ({ params: { slug: slug.replace(slugPrefix, '') } }));
+}
+
+const { slug: _slug } = Astro.params;
+const blogPostSlug = `${slugPrefix}${_slug}`;
+
+const data = await pageFetch<{
+  postContent: ContentProps;
+  blogPage: { name: string; slug: string; }
+}>({
+  slug: blogPostSlug,
+  additionalQuery: `
+    "postContent": {
+      ${ContentQuery}
+    },
+    "blogPage": *[_type == "Blog_Page"][0]{
+      name,
+      "slug": slug.current
+    },
+  `
+});
+
+if (!data) return Astro.rewrite('/404');
+
+const { page: { blogPage, name, slug, postContent, components }, metadata } = data;
+
+const blogPostSchema = {
+  path: slug,
+  title: name,
+  description: metadata.description,
+  image: postContent.hero.image.asset.url,
+  datePublished: postContent.hero._createdAt,
+  dateModified: postContent.hero._updatedAt,
+};
+---
+
+<Layout {...metadata}>
+  <Fragment slot='head'>
+    <BlogPostingSchema {...blogPostSchema} />
+    <BreadcrumbsSchema
+      data={[
+        { name: blogPage.name, path: blogPage.slug },
+        { name, path: slug },
+      ]}
+    />
+  </Fragment>
+  <Content {...postContent} />
+  {components && <Components data={components} indexStart={1} />}
+</Layout>

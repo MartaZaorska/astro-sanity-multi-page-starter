@@ -1,0 +1,42 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+type Props = {
+  slug: string;
+  isActive?: boolean;
+  count: number;
+} & HTMLAttributes<'button'>;
+
+const { slug, count, isActive = false, ...props } = Astro.props;
+---
+
+<a
+  {...props}
+  href={slug}
+  class='CategoryTab'
+  aria-current={isActive ? 'page' : undefined}
+>
+  <slot />
+  <span>({count})</span>
+</a>
+<style lang='scss'>
+  .CategoryTab {
+    border-radius: 100vmax;
+    padding: 0.4rem 0.7rem;
+    background-color: var(--neutral-200);
+    transition: background-color 150ms, opacity 150ms;
+
+    &:hover {
+      background-color: hsl(0, 0%, 84%);
+    }
+
+    &[aria-current='page'] {
+      background-color: var(--primary-500);
+      color: var(--neutral-100);
+      opacity: 0.9;
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+</style>

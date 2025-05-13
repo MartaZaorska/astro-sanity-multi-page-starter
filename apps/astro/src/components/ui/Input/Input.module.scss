@@ -1,0 +1,43 @@
+.Input {
+  width: 100%;
+  margin-bottom: 1rem;
+
+  .label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  input,
+  textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #cdcdcd;
+    transition: border-color 500ms;
+
+    &:hover {
+      border-color: var(--neutral-600);
+    }
+
+    &:focus-visible {
+      outline: none;
+      border-color: var(--neutral-600);
+    }
+
+    &::placeholder {
+      color: var(--neutral-600);
+    }
+
+    &[aria-invalid='true'] {
+      border-color: var(--error-400);
+    }
+  }
+
+  textarea {
+    min-height: 6rem;
+    max-height: 10rem;
+    resize: none;
+  }
+}

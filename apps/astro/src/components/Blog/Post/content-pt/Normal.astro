@@ -1,0 +1,12 @@
+---
+// eslint-disable-next-line no-unused-vars
+const { node, index, isInline, ...props } = Astro.props;
+---
+
+{
+  node?.plainText === '' ? null : (
+    <p {...props}>
+      <slot />
+    </p>
+  )
+}

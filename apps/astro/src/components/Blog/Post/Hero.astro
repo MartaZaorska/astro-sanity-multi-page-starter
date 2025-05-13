@@ -1,0 +1,100 @@
+---
+import PortableText, { PortableTextQuery, type PortableTextValue } from '@/components/ui/portable-text';
+import Image, { ImageDataQuery, type ImageDataProps } from '@/components/ui/Image.astro';
+import Button from '@/components/ui/Button/Button';
+import { formatDate } from '@/utils/format-date';
+
+export const HeroQuery = `
+  "hero": {
+    ${PortableTextQuery('heading')}
+    ${PortableTextQuery('paragraph')}
+    ${ImageDataQuery('image')}
+    "_createdAt": coalesce(publishedDate, _createdAt),
+    _updatedAt,
+  },
+`;
+
+export type HeroProps = {
+  _createdAt: string;
+  _updatedAt: string;
+  heading: PortableTextValue;
+  paragraph?: PortableTextValue;
+  image: ImageDataProps;
+  readingTime: string;
+};
+
+const { _createdAt, _updatedAt, heading, paragraph, image, readingTime } = Astro.props as HeroProps;
+---
+
+<section class='Hero'>
+  <header>
+    <p>{readingTime}</p>
+    <PortableText
+      value={heading}
+      heading='h1'
+    />
+    <p class='date'>
+      <span>Utworzono: {formatDate(_createdAt)}</span>
+      <span>Ostatnia aktualizacja: {formatDate(_updatedAt)}</span>
+    </p>
+    {
+      paragraph && (
+        <PortableText
+          class='paragraph'
+          value={paragraph}
+        />
+      )
+    }
+    <Button class='share'>Udostępnij</Button>
+  </header>
+  <Image
+    {...image}
+    sizes='50vw'
+    priority={true}
+  />
+</section>
+
+<style lang='scss'>
+  .Hero {
+    margin-bottom: 2rem;
+
+    header {
+      max-width: 36rem;
+
+      h1 {
+        margin: 1rem 0;
+      }
+
+      p {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 0.2rem;
+      }
+
+      .paragraph {
+        margin: 2rem 0;
+      }
+    }
+
+    img {
+      margin: 2rem 0;
+    }
+
+    .share {
+      margin-top: 1.5rem;
+    }
+  }
+</style>
+<script>
+  document.querySelector('.share')?.addEventListener('click', () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('feature', 'share');
+    if (navigator.share) {
+      navigator.share({ title: document.title, url: url.toString() });
+    } else {
+      navigator.clipboard.writeText(url.toString());
+      alert('Pomyślnie skopiowano link');
+    }
+  });
+</script>

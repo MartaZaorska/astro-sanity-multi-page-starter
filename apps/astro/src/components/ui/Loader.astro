@@ -1,0 +1,37 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+type Props = HTMLAttributes<'div'>;
+const { ...props } = Astro.props;
+---
+
+<div {...props}><span></span></div>
+
+<style lang='scss'>
+  div {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    place-items: center;
+
+    span {
+      border-top: 2px solid var(--primary-500);
+      border-bottom: 2px solid var(--primary-500);
+      display: block;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: rotate 800ms infinite;
+
+      @keyframes rotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    }
+  }
+</style>

@@ -1,0 +1,42 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import sanityFetch from '@/utils/sanity.fetch';
+import pageFetch from '@/utils/page.fetch';
+import Components from '@/components/Components.astro';
+import BreadcrumbsSchema from '@/schema/BreadcrumbsSchema.astro';
+
+export async function getStaticPaths() {
+  const slugs = await sanityFetch<string[]>({
+    query: `*[_type == 'Service_Collection'][].slug.current`,
+  });
+  return slugs?.map(slug => ({ params: { service: slug.startsWith('/') ? slug.slice(1) : slug } }));
+}
+
+const { service } = Astro.params;
+if(!service) return Astro.rewrite('/404');
+
+const data = await pageFetch<{
+  parentPage?: { name: string; slug: string; }
+}>({
+  slug: `/${service}`,
+  additionalQuery: `
+    isSubPage => {
+      parentPage->{
+        name, 
+        "slug": slug.current
+      }
+    },
+  `
+});
+
+if (!data) return Astro.rewrite('/404');
+const { page: {name, slug, components, parentPage}, metadata } = data;
+---
+
+<Layout {...metadata}>
+  <BreadcrumbsSchema
+    slot='head'
+    data={[...(parentPage ? [{ name: parentPage.name, path: parentPage.slug }] : []), { name, path: slug }]}
+  />
+  {components && <Components data={components} />}
+</Layout>

@@ -1,0 +1,28 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import pageFetch from '@/utils/page.fetch';
+import Listing, { type ListingProps, ListingQuery } from '@/components/Blog/Listing.astro';
+import Components from '@/components/Components.astro';
+import BreadcrumbsSchema from '@/schema/BreadcrumbsSchema.astro';
+
+const data = await pageFetch<{
+  listing: ListingProps;
+}>({
+  slug: '/blog',
+  additionalQuery: `
+    ${ListingQuery({})}
+  `
+});
+
+if (!data) return Astro.redirect('/404');
+const { page: { name, slug, components, listing }, metadata } = data;
+---
+
+<Layout {...metadata}>
+  <BreadcrumbsSchema
+    slot='head'
+    data={[{ name, path: slug }]}
+  />
+  <Listing {...listing} />
+  {components && <Components data={components} indexStart={1} />}
+</Layout>

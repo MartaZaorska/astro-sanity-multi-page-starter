@@ -1,0 +1,38 @@
+---
+import BreadcrumbsSchema from '@/schema/BreadcrumbsSchema.astro';
+
+type Props = {
+  data?: {
+    name: string;
+    path: string;
+  }[];
+  isHidden?: boolean;
+};
+
+const { data = [{ path: '/', name: 'Strona główna' }], isHidden = false } = Astro.props;
+
+const breadcrumbsData = data[0]?.path !== '/' ? [{ path: '/', name: 'Strona główna' }, ...data] : data;
+---
+
+<BreadcrumbsSchema data={breadcrumbsData} />
+{!isHidden && breadcrumbsData.length >= 2 && (
+  <nav aria-label='Breadcrumbs' class="Breadcrumbs">
+    {breadcrumbsData.map(({ name, path }, i) => {
+      const isLast = i === breadcrumbsData.length - 1;
+      const breadcrumbName = name.length > 35 ? name.slice(0, 32) + '...' : name
+
+      return isLast ? <span>{breadcrumbName}</span> : (
+        <a href={path}>{breadcrumbName}</a>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none"><path stroke="#374776" stroke-linecap="round" stroke-linejoin="round" d="m6 12 4-4-4-4" aria-hidden="true" /></svg>
+      )
+    })}
+  </nav>
+)}
+  
+<style lang="scss">
+  .Breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+</style>

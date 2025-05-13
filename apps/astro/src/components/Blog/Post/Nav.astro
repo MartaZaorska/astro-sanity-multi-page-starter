@@ -1,0 +1,144 @@
+---
+import type { PortableTextProps } from 'astro-portabletext/types';
+import type { PortableTextBlock } from '@portabletext/types';
+import { slugify } from '@/utils/slugify';
+
+type NavProps = {
+  headings: (PortableTextProps['value'] & { plainText: string })[];
+};
+
+const { headings } = Astro.props as NavProps;
+
+type HeadingGroup = {
+  heading: { text: string; slug: string };
+  subHeadings: { text: string; slug: string }[];
+};
+
+const groupedHeadings = headings?.reduce<HeadingGroup[]>((acc, heading) => {
+  const style = (heading as PortableTextBlock).style as string;
+  const slug = slugify(heading.plainText);
+  if (style === 'h2') {
+    acc.push({ heading: { text: heading.plainText, slug }, subHeadings: [] });
+  } else if (style === 'h3' && acc.length > 0) {
+    acc[acc.length - 1].subHeadings.push({ text: heading.plainText, slug });
+  }
+  return acc;
+}, []);
+---
+
+<nav
+  aria-label='Nawigacja do sekcji artykułu'
+  class='content-nav'
+>
+  <p>Tematy w artykule</p>
+  <ul>
+    {
+      groupedHeadings.map(({ heading, subHeadings }) => (
+        <li>
+          <a
+            href={`#${heading.slug}`}
+            aria-current='false'
+          >
+            {heading.text}
+            {subHeadings.length > 0 && (
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                width='13'
+                height='12'
+                fill='none'
+              >
+                <path
+                  stroke='#121212'
+                  d='M6.5 2v8m0 0 3-3m-3 3-3-3'
+                />
+              </svg>
+            )}
+          </a>
+          {subHeadings.length > 0 && (
+            <ul>
+              {subHeadings.map(({ slug, text }) => (
+                <li>
+                  <a
+                    href={`#${slug}`}
+                    aria-current='false'
+                  >
+                    {text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+<style lang='scss'>
+  .content-nav {
+    & > ul {
+      li {
+        padding-left: 0;
+        margin: 0.2rem 0;
+
+        &::before {
+          content: '';
+        }
+
+        a {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 1rem;
+          padding: 0.5rem;
+          border: 1px solid;
+          border-color: transparent;
+          border-radius: 0.5rem;
+          transition: border-color 200ms;
+          &[aria-current='true'] {
+            border-color: var(--primary-500);
+          }
+        }
+
+        > ul {
+          display: none;
+          li a {
+            padding: 0.5rem 0.5rem 0.5rem 1rem;
+            font-size: 0.9rem;
+          }
+        }
+
+        &:has([aria-current='true']) {
+          > ul {
+            display: block;
+          }
+        }
+      }
+    }
+  }
+</style>
+<script>
+  document.querySelectorAll<HTMLDivElement>('.content-nav')?.forEach(nav => {
+    const contentPT = nav.closest('.content')?.querySelector('.content-pt');
+    if (!contentPT) return;
+
+    const navLinks = nav.querySelectorAll('a');
+    const headings = Array.from(contentPT.querySelectorAll(':scope > h2, :scope > h3'));
+
+    function updateActiveHeading() {
+      const triggerPoint = 124;
+      const currentHeading = headings.reduce((current, heading) => {
+        const headingTop = heading.getBoundingClientRect().top;
+        if (headingTop <= triggerPoint) return heading;
+        return current;
+      }, headings[0]);
+
+      navLinks.forEach(link => link.setAttribute('aria-current', 'false'));
+      if (currentHeading) {
+        const id = currentHeading.getAttribute('id');
+        nav.querySelector(`a[href="#${id}"]`)?.setAttribute('aria-current', 'true');
+      }
+    }
+    window.addEventListener('scroll', () => requestAnimationFrame(updateActiveHeading));
+    updateActiveHeading();
+  });
+</script>

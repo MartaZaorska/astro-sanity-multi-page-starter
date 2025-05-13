@@ -1,0 +1,55 @@
+---
+import type { ComponentProps } from 'astro/types';
+import HeroSection, { HeroSectionQuery } from '@/components/global/HeroSection.astro';
+import Faq, { FaqQuery } from '@/components/global/Faq.astro';
+import LatestBlogPosts, { LatestBlogPostsQuery } from '@/components/global/LatestBlogPosts.astro';
+import ContactForm, { ContactFormQuery } from '@/components/global/ContactForm/ContactForm.astro';
+
+const components = {
+  HeroSection,
+  Faq,
+  LatestBlogPosts,
+  ContactForm,
+};
+
+type ComponentsMap = {
+  [Component in keyof typeof components]: {
+    _type: Component;
+  } & ComponentProps<(typeof components)[Component]>;
+};
+
+export type ComponentsProps = Array<ComponentsMap[keyof typeof components]>;
+
+type Props = {
+  data: ComponentsProps;
+  indexStart?: number;
+};
+
+const { data, indexStart = 0 } = Astro.props;
+
+export const ComponentsQuery = `
+  components[] {
+    _type,
+    sectionId,
+    ${HeroSectionQuery}
+    ${FaqQuery}
+    ${LatestBlogPostsQuery}
+    ${ContactFormQuery}
+  },
+`;
+---
+
+{
+  data?.map((item, i) => {
+    // NOTE: Using 'as any' is not ideal for type safety, but it's used here to simplify
+    // the implementation and avoid creating separate typed interfaces for each component.
+    const DynamicComponent = components[item._type] as any;
+    if (!DynamicComponent) return null;
+    return (
+      <DynamicComponent
+        {...item}
+        index={indexStart + i}
+      />
+    );
+  })
+}

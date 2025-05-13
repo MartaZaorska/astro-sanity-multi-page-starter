@@ -1,0 +1,24 @@
+---
+import ImageRenderer, { ImageDataQuery, type ImageDataProps } from '@/components/ui/Image.astro';
+
+export const ImageQuery = `
+  _type == "Image" => ${ImageDataQuery('@')}
+`;
+
+type Props = {
+  node: ImageDataProps;
+};
+
+const { node } = Astro.props;
+---
+
+<ImageRenderer
+  asset={node.asset}
+  sizes='50vw'
+/>
+
+<style lang='scss'>
+  img {
+    margin: 2rem 0;
+  }
+</style>

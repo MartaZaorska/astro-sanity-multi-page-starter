@@ -1,0 +1,113 @@
+---
+import PortableText, { PortableTextQuery, type PortableTextValue } from '@/components/ui/portable-text';
+import Image, { ImageDataQuery, type ImageDataProps } from '@/components/ui/Image.astro';
+import Button, { ButtonDataQuery, type ButtonDataProps } from '@/components/ui/Button';
+
+export const HeroSectionQuery = `
+  _type == "HeroSection" => {
+    ${PortableTextQuery('heading')}
+    ${PortableTextQuery('paragraph')}
+    ${ImageDataQuery('image')}
+    ${ButtonDataQuery('cta')}
+    imagePosition
+  },
+`;
+
+type Props = {
+  index: number;
+  sectionId?: string;
+  image: ImageDataProps;
+  heading: PortableTextValue;
+  paragraph: PortableTextValue;
+  cta: ButtonDataProps;
+  imagePosition: 'left' | 'right'
+};
+
+const { index, sectionId, image, heading, paragraph, cta, imagePosition } = Astro.props;
+---
+
+<section
+  class='HeroSection max-width'
+  id={sectionId}
+  data-image-position={imagePosition}
+>
+  <header>
+    <PortableText
+      value={heading}
+      heading={index === 0 ? 'h1' : 'h2'}
+    />
+    <PortableText value={paragraph} />
+    <Button {...cta} />
+  </header>
+  <Image
+    {...image}
+    sizes='(min-width: 1200px) 750px, (min-width: 992px) 600px, 100vw'
+    priority={index === 0}
+  />
+</section>
+
+<style lang='scss'>
+  .HeroSection {
+    padding: clamp(4rem, calc(80vw / 9.92), 5rem) 0;
+
+    @media (min-width: 62rem){
+      display: flex;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    header {
+      display: grid;
+      gap: 1.2rem;
+      justify-items: start;
+      align-content: center;
+      margin-bottom: 4rem;
+      max-width: 500px;
+      @media (min-width: 62rem){
+        order: 2;
+        margin-bottom: 0;
+      }
+
+      :global(ul){
+        margin-top: 0.8rem;
+      }
+    }
+
+    img {
+      @media (min-width: 62rem){
+        max-width: 600px;
+        order: 1;
+      }
+
+      @media (min-width: 75rem){
+        max-width: 750px;
+      }
+    }
+
+    &[data-image-position='left']{
+      @media (min-width: 62rem){
+        header {
+          order: 2;
+        }
+
+        img {
+          order: 1;
+        }
+      }
+    }
+
+    &[data-image-position='right']{
+      @media (min-width: 62rem){
+        header {
+          order: 1;
+        }
+
+        img {
+          order: 2;
+        }
+      }
+    }
+
+    
+  }
+</style>

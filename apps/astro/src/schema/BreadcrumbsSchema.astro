@@ -1,0 +1,29 @@
+---
+type Props = {
+  data?: {
+    name: string;
+    path: string;
+  }[];
+};
+
+const { data = [{ path: '/', name: 'Strona główna' }] } = Astro.props;
+
+const breadcrumbsData = data[0].path !== '/' ? [{ path: '/', name: 'Strona główna' }, ...data] : data;
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: breadcrumbsData.map(({ name, path }, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name,
+    item: `${Astro.url.origin}${path}`,
+  })),
+};
+---
+
+<script
+  is:inline
+  type='application/ld+json'
+  set:html={JSON.stringify(schema)}
+/>

@@ -1,0 +1,85 @@
+---
+import PortableText, { PortableTextQuery, type PortableTextValue } from '@/components/ui/portable-text';
+import Button, { ButtonDataQuery, type ButtonDataProps } from '@/components/ui/Button';
+import BlogCard, { BlogCardQuery, type BlogCardProps } from '@/components/ui/BlogCard.astro';
+
+export const LatestBlogPostsQuery = `
+  _type == "LatestBlogPosts" => {
+    ${PortableTextQuery('heading')}
+    ${PortableTextQuery('paragraph')}
+    ${ButtonDataQuery('cta')}
+    "posts": select(posts != null => 
+      posts[]->{
+        ${BlogCardQuery}
+      },
+      *[_type == "BlogPost_Collection"] | order(coalesce(publishedAt, _createdAt) desc) [0...3]{
+        ${BlogCardQuery}
+      }
+    )
+  },
+`;
+
+type Props = {
+  index: number;
+  sectionId?: string;
+  heading: PortableTextValue;
+  paragraph?: PortableTextValue;
+  cta?: ButtonDataProps;
+  posts: BlogCardProps[];
+};
+
+const { index, sectionId, heading, paragraph, cta, posts } = Astro.props;
+---
+
+<section
+  class='LatestBlogPosts max-width'
+  id={sectionId}
+>
+  <header>
+    <PortableText
+      value={heading}
+      heading={index === 0 ? 'h1' : 'h2'}
+    />
+    {paragraph && <PortableText value={paragraph} />}
+    {cta && <Button {...cta} />}
+  </header>
+  <div class='posts'>
+    {
+      posts.map((post, i) => (
+        <BlogCard
+          {...post}
+          imgProps={{
+            sizes: '50vw',
+            priority: index === 0 && i === 0,
+            loading: index === 0 ? 'eager' : 'lazy',
+          }}
+        />
+      ))
+    }
+  </div>
+</section>
+<style lang='scss'>
+  .LatestBlogPosts {
+    margin: 4rem auto clamp(5rem, calc(104vw / 7.68), 8rem);
+    header {
+      max-width: 48rem;
+      display: grid;
+      gap: 1rem;
+      justify-items: start;
+      margin-bottom: 2rem;
+    }
+
+    .posts {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+      @media (min-width: 48rem) {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      @media (min-width: 60rem) {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  }
+</style>

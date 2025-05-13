@@ -1,0 +1,58 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import sanityFetch from '@/utils/sanity.fetch';
+import pageFetch from '@/utils/page.fetch';
+import Listing, { type ListingProps, ListingQuery } from '@/components/Blog/Listing.astro';
+import Components from '@/components/Components.astro';
+import BreadcrumbsSchema from '@/schema/BreadcrumbsSchema.astro';
+
+const slugPrefix = '/blog/kategoria/';
+
+export async function getStaticPaths() {
+  const categories = await sanityFetch<{ slug: string; name: string }[]>({
+    query: `
+      *[_type == 'BlogCategory_Collection' && count(*[_type == "BlogPost_Collection" && references(^._id)]) > 0][]{
+        "slug": slug.current,
+         name
+      }
+    `
+  });
+  return categories?.map(({ slug }) => ({ params: { category: slug.replace(slugPrefix, '') } }));
+}
+
+const { category: _category } = Astro.params;
+const categorySlug = `${slugPrefix}${_category}`;
+
+const data = await pageFetch<{
+  listing: ListingProps
+  currentCategory: { name: string; slug: string; }
+}>({
+  slug: '/blog',
+  metadataSlug: categorySlug,
+  additionalQuery: `
+    "currentCategory": *[_type == "BlogCategory_Collection" && slug.current == "${categorySlug}"][0]{
+      name,
+      "slug": slug.current
+    },
+    ${ListingQuery({ categorySlug })}
+  `
+});
+
+if (!data) return Astro.rewrite('/404');
+const { page: { name, slug, components, listing, currentCategory }, metadata } = data;
+---
+
+<Layout {...metadata}>
+  <BreadcrumbsSchema
+    slot='head'
+    data={[
+      { name, path: slug },
+      { name: currentCategory.name, path: currentCategory.slug },
+    ]}
+  />
+  <Listing
+    {...listing}
+    currentCategorySlug={categorySlug}
+  />
+  {components && <Components indexStart={1} data={components} />}
+</Layout>

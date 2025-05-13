@@ -1,0 +1,76 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import sanityFetch from '@/utils/sanity.fetch';
+import pageFetch from '@/utils/page.fetch';
+import Listing, { type ListingProps, ListingQuery } from '@/components/Blog/Listing.astro';
+import Components from '@/components/Components.astro';
+import BreadcrumbsSchema from '@/schema/BreadcrumbsSchema.astro';
+import { POSTS_PER_PAGE } from '@/global/constants';
+
+export const totalPosts = await sanityFetch<number>({
+  query: `count(*[_type == "BlogPost_Collection"])`,
+});
+export const totalPages = Math.ceil(totalPosts / POSTS_PER_PAGE);
+
+export async function getStaticPaths() {
+  return Array.from({ length: totalPages - 1 }, (_, i) => ({
+    params: { page: (i + 2).toString() },
+  }));
+}
+
+const { page: _page } = Astro.params;
+const currentPage = parseInt(_page);
+
+if (!currentPage || currentPage < 1 || currentPage > totalPages) return Astro.rewrite('/404');
+if (currentPage === 1) return Astro.redirect('/blog');
+
+const data = await pageFetch<{
+  listing: ListingProps
+}>({
+  slug: `/blog`,
+  additionalQuery: `
+    ${ListingQuery({ page: currentPage })}
+  `
+})
+
+if (!data) return Astro.redirect('/404');
+const { page: { name, slug, components, listing }, metadata } = data;
+---
+
+<Layout
+  description={metadata.description}
+  openGraphImage={metadata.openGraphImage}
+  doNotIndex={metadata.doNotIndex}
+  path={Astro.url.pathname}
+  title={`${metadata.title} | Strona ${currentPage}`}
+>
+  <Fragment slot='head'>
+    {
+      currentPage > 1 && (
+        <link
+          rel='prev'
+          href={currentPage === 2 ? `${Astro.url.origin}/blog` : `${Astro.url.origin}/blog/strona/${currentPage - 1}`}
+        />
+      )
+    }
+    {
+      currentPage < totalPages && (
+        <link
+          rel='next'
+          href={`${Astro.url.origin}/blog/strona/${currentPage + 1}`}
+        />
+      )
+    }
+    <BreadcrumbsSchema
+      data={[
+        { name, path: slug },
+        { name: `Strona ${currentPage}`, path: `/blog/strona/${currentPage}` },
+      ]}
+    />
+  </Fragment>
+  <Listing
+    {...listing}
+    currentPage={currentPage}
+  />
+  {components && <Components data={components} indexStart={1} />}
+</Layout>

@@ -1,0 +1,106 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import sanityFetch from '@/utils/sanity.fetch';
+import pageFetch from '@/utils/page.fetch';
+import Listing, { type ListingProps, ListingQuery } from '@/components/Blog/Listing.astro';
+import Components from '@/components/Components.astro';
+import BreadcrumbsSchema from '@/schema/BreadcrumbsSchema.astro';
+import { POSTS_PER_PAGE } from '@/global/constants';
+
+export const slugPrefix = '/blog/kategoria/';
+
+export async function getCategoryData() {
+  return await sanityFetch<{ name: string; slug: string; count: number }[]>({
+    query: `
+      *[_type == "BlogCategory_Collection" && count(*[_type == "BlogPost_Collection" && references(^._id)]) > 0]{
+        name,
+        "slug": slug.current,
+        "count": count(*[_type == "BlogPost_Collection" && references(^._id) && defined(category)])
+      }
+    `,
+  });
+}
+
+export async function getStaticPaths() {
+  const categories = await getCategoryData();
+  return categories.flatMap(({ slug, count }) => {
+    const totalPages = Math.ceil(count / POSTS_PER_PAGE);
+    const category = slug.replace(slugPrefix, '');
+    return Array.from({ length: totalPages - 1 }, (_, i) => ({
+      params: {
+        category,
+        page: (i + 2).toString(),
+      },
+    }));
+  });
+}
+
+const categories = await getCategoryData();
+const { category: _category, page: _page } = Astro.params;
+const currentCategory = categories.find(({ slug }) => slug === `${slugPrefix}${_category}`);
+const currentPage = parseInt(_page);
+
+if (!currentPage || !currentCategory) return Astro.rewrite('/404');
+
+const totalPages = Math.ceil((currentCategory.count || 0) / POSTS_PER_PAGE);
+if (currentPage === 1) return Astro.redirect(currentCategory.slug);
+if (currentPage < 1 || currentPage > totalPages) return Astro.rewrite('/404');
+
+const data = await pageFetch<{
+  listing: ListingProps;
+}>({
+  slug: '/blog',
+  metadataSlug: currentCategory.slug,
+  additionalQuery: `
+    ${ListingQuery({ categorySlug: currentCategory.slug, page: currentPage })}
+  `
+})
+
+if (!data) return Astro.redirect('/404');
+
+const { page: { name, slug, components, listing }, metadata } = data;
+---
+
+<Layout
+  description={metadata.description}
+  openGraphImage={metadata.openGraphImage}
+  doNotIndex={metadata.doNotIndex}
+  path={Astro.url.pathname}
+  title={`${metadata.title} | Strona ${currentPage}`}
+>
+  <Fragment slot='head'>
+    {
+      currentPage > 1 && (
+        <link
+          rel='prev'
+          href={
+            currentPage === 2
+              ? `${Astro.url.origin}${currentCategory.slug}`
+              : `${Astro.url.origin}${currentCategory.slug}/strona/${currentPage - 1}`
+          }
+        />
+      )
+    }
+    {
+      currentPage < totalPages && (
+        <link
+          rel='next'
+          href={`${Astro.url.origin}${currentCategory.slug}/strona/${currentPage + 1}`}
+        />
+      )
+    }
+    <BreadcrumbsSchema
+      data={[
+        { name, path: slug },
+        { name: currentCategory.name, path: currentCategory.slug },
+        { name: `Strona ${currentPage}`, path: `${currentCategory.slug}/strona/${currentPage}` },
+      ]}
+    />
+  </Fragment>
+  <Listing
+    {...listing}
+    currentPage={currentPage}
+    currentCategorySlug={currentCategory.slug}
+  />
+  {components && <Components data={components} indexStart={1} />}
+</Layout>

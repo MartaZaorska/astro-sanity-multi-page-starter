@@ -1,0 +1,342 @@
+---
+import Switch from '@/components/ui/Switch.astro';
+import Button from '@/components/ui/Button';
+import sanityFetch from '@/utils/sanity.fetch';
+
+const { gtmId } = await sanityFetch<{ gtmId?: string }>({
+  query: `
+    *[_type == "global"][0] {
+      "gtmId": coalesce(analytics.gtmId, null)
+    }
+  `,
+});
+
+if (!gtmId) return null;
+
+const groups = [
+  {
+    id: 'necessary',
+    name: 'Niezbędne',
+    description: `Niezbędne pliki cookie pomagają uczynić naszą stronę użyteczną, umożliwiając działanie podstawowych funkcji, takich jak nawigacja po stronie internetowej czy dostęp do bezpiecznych obszarów strony. Bez tych plików cookie niektóre podstawowe funkcje strony nie będą działać prawidłowo.`,
+  },
+  {
+    id: 'analytics',
+    name: 'Analityczne',
+    description: `Pliki cookie analityczne pomagają nam zrozumieć, w jaki sposób użytkownicy wchodzą w interakcje z naszą stroną internetową, zbierając i raportując informacje anonimowo. Te dane są wykorzystywane do doskonalenia struktury i treści strony.`,
+  },
+  {
+    id: 'preferences',
+    name: 'Preferencyjne',
+    description: `Pliki cookie preferencyjne pozwalają stronie internetowej zapamiętywać informacje, które zmieniają sposób, w jaki strona się zachowuje lub wygląda, takie jak preferowany język lub region, w którym się znajdujesz.`,
+  },
+  {
+    id: 'marketing',
+    name: 'Marketingowe',
+    description: `Pliki cookie marketingowe są używane do śledzenia odwiedzających na stronach internetowych. Ich celem jest wyświetlanie reklam, które są istotne i interesujące dla indywidualnych użytkowników, a tym samym bardziej wartościowe dla wydawców i zewnętrznych reklamodawców.`,
+    // subGroups: [
+    //   {
+    //     id: 'conversion_api',
+    //     name: 'API Konwersji (Facebook)',
+    //     description:
+    //       'Pozwala na przesyłanie danych o konwersjach bezpośrednio do platform reklamowych w celu poprawy skuteczności reklam i lepszego mierzenia ich efektywności.',
+    //   },
+    //   {
+    //     id: 'advanced_matching',
+    //     name: 'Zaawansowane Dopasowanie (Facebook)',
+    //     description:
+    //       'Umożliwia lepsze dopasowanie użytkowników do ich działań na stronie, co pomaga w dokładniejszym targetowaniu reklam i analizie ich skuteczności.',
+    //   },
+    // ],
+  },
+];
+---
+
+{
+  gtmId && (
+    <noscript>
+      <iframe
+        src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+        height='0'
+        width='0'
+        style='display:none;visibility:hidden;'
+      />
+    </noscript>
+  )
+}
+<aside
+  class='cookie-consent'
+  aria-hidden='true'
+>
+  <div class='content'>
+    <div
+      class='consent'
+      data-active='true'
+    >
+      <h2 class='h2'>Korzystając ze strony zgadzasz się na użycie plików cookie</h2>
+      <p>
+        Korzystamy z plików cookie, aby zapewnić prawidłowe funkcjonowanie naszej strony oraz dostosować jej działanie
+        do Twoich potrzeb. <a
+          href='/polityka-prywatnosci'
+          class='link'
+          target='_blank'
+          >Dowiedz się więcej</a
+        >
+      </p>
+    </div>
+    <div
+      class='details'
+      data-active='false'
+    >
+      <p>
+        Poniżej znajdziesz informacje o tym, jakie dane i w jakim celu zbieramy. Nie musisz wyrażać zgody na wszystkie
+        rodzaje plików cookie - w każdej chwili możesz zmienić swoje ustawienia.
+      </p>
+      <div class='preferences'>
+        {
+          groups.map(({ id, name, description }) => (
+            <div class='group'>
+              <Switch
+                labelProps={{ for: id }}
+                inputProps={{ id, ...(id === 'necessary' ? { disabled: true, checked: true } : {}) }}
+              >
+                <p class='name'>{name}</p>
+                <p class='description'>{description}</p>
+              </Switch>
+              {/* {subGroups.length > 0 && (
+                <div class='subgroup'>
+                  {subGroups.map(({ id, name, description }) => (
+                    <Switch
+                      labelProps={{ for: id }}
+                      inputProps={{ id }}
+                    >
+                      <p class='name'>{name}</p>
+                      <p class='description'>{description}</p>
+                    </Switch>
+                  ))}
+                </div>
+              )} */}
+            </div>
+          ))
+        }
+      </div>
+    </div>
+    <div class='actions'>
+      <Button class='agree'>Zgoda na wszystkie</Button>
+      <Button class='set-preferences'>Ustaw preferencje</Button>
+      <Button class='deny'>Odmowa</Button>
+    </div>
+  </div>
+</aside>
+<style lang='scss'>
+  :global(html) {
+    &:has(.cookie-consent[aria-hidden='false']) {
+      overflow: hidden;
+    }
+  }
+
+  .cookie-consent {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.34);
+    backdrop-filter: blur(4px);
+    display: grid;
+    place-items: center;
+    z-index: 400;
+
+    &[aria-hidden='true'] {
+      display: none;
+    }
+
+    .content {
+      width: 300px;
+      max-height: 75svh;
+      max-height: 75vh;
+      background-color: var(--neutral-100);
+      padding: 2rem 2rem 0;
+      overflow: hidden;
+
+      @supports (max-height: 75svh) {
+        max-height: 75svh;
+      }
+      @media (min-width: 22.5rem) {
+        width: clamp(21rem, calc(652vw / 7.68), 49.625rem);
+      }
+
+      > div:not(.actions) {
+        > p {
+          margin: 1.5rem 0;
+        }
+        &[data-active='false'] {
+          display: none;
+        }
+        &[data-active='true'] {
+          display: block;
+        }
+
+        .preferences {
+          display: grid;
+          gap: 1rem;
+          height: 45vh;
+          overflow-y: auto;
+          overscroll-behavior: contain;
+
+          .subgroup {
+            margin-top: 1rem;
+            display: grid;
+            gap: 1rem;
+          }
+
+          .group,
+          .subgroup {
+            p:first-child {
+              font-weight: 600;
+              margin: 0.25rem 0;
+            }
+          }
+
+          &::-webkit-scrollbar {
+            background: transparent;
+            width: 15px;
+          }
+
+          &::-webkit-scrollbar-thumb {
+            box-shadow: inset 0 0 15px 15px rgba(110, 110, 110, 0.4);
+            border: solid 5px transparent;
+            border-radius: 1.3em;
+          }
+
+          &::-webkit-scrollbar-track {
+            box-shadow: inset 0 0 15px 15px transparent;
+            border: solid 5px transparent;
+          }
+        }
+
+        .subgroup {
+          padding-left: 2rem;
+          border-left: 1px solid var(--neutral-200);
+        }
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 2rem 0;
+
+        @media (min-width: 48rem) {
+          button:last-child {
+            margin-left: auto;
+          }
+        }
+      }
+    }
+  }
+</style>
+<script is:inline define:vars={{ gtmId }}>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    window.dataLayer.push(arguments);
+  }
+
+  function getCookie(name) {
+    const cookies = document.cookie.split(';').map(cookie => cookie.trim());
+    const cookie = cookies.find(cookie => cookie.startsWith(`${name}=`));
+    return cookie ? decodeURIComponent(cookie.substring(name.length + 1)) : null;
+  }
+
+  function setCookie(name, value, days = 1) {
+    const date = new Date(Date.now() + 86400000 * days);
+    const expires = days ? `; expires=${date.toUTCString()}` : '';
+    document.cookie = `${name}=${encodeURIComponent(value)}${expires}; SameSite=Strict`;
+  }
+
+  function setConsent(consent) {
+    const consentMode = {
+      functionality_storage: consent.necessary ? 'granted' : 'denied',
+      security_storage: consent.necessary ? 'granted' : 'denied',
+      ad_storage: consent.marketing ? 'granted' : 'denied',
+      ad_user_data: consent.marketing ? 'granted' : 'denied',
+      ad_personalization: consent.marketing ? 'granted' : 'denied',
+      analytics_storage: consent.analytics ? 'granted' : 'denied',
+      personalization_storage: consent.preferences ? 'granted' : 'denied',
+    };
+    gtag('consent', 'update', consentMode);
+    setCookie('cookie-consent', JSON.stringify(consentMode), 90);
+
+    const focusedElement = document.activeElement;
+    if (focusedElement && cookieConsentElement.contains(focusedElement)) {
+      focusedElement.blur();
+    }
+
+    cookieConsentElement.ariaHidden = 'true';
+  }
+
+  const cookieConsentElement = document.querySelector('.cookie-consent');
+  const acceptAllButton = cookieConsentElement.querySelector('.agree');
+  const preferencesButton = cookieConsentElement.querySelector('.set-preferences');
+  const denyButton = cookieConsentElement.querySelector('.deny');
+  const detailsElement = cookieConsentElement.querySelector('.details');
+  const consentElement = cookieConsentElement.querySelector('.consent');
+
+  // Initialize GTM
+  (function (w, d, s, l, i) {
+    w[l] = w[l] || [];
+    w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+    var f = d.getElementsByTagName(s)[0],
+      j = d.createElement(s),
+      dl = l != 'dataLayer' ? '&l=' + l : '';
+    j.async = true;
+    j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+    f.parentNode.insertBefore(j, f);
+  })(window, document, 'script', 'dataLayer', gtmId);
+
+  if (getCookie('cookie-consent') === null) {
+    gtag('consent', 'default', {
+      functionality_storage: 'denied',
+      security_storage: 'denied',
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'denied',
+      personalization_storage: 'denied',
+    });
+    cookieConsentElement.ariaHidden = 'false';
+  } else {
+    gtag('consent', 'default', JSON.parse(getCookie('cookie-consent')));
+  }
+
+  preferencesButton.addEventListener('click', () => {
+    if (detailsElement.dataset.active === 'true') {
+      setConsent({
+        necessary: cookieConsentElement.querySelector('input[id="necessary"]').checked,
+        marketing: cookieConsentElement.querySelector('input[id="marketing"]').checked,
+        analytics: cookieConsentElement.querySelector('input[id="analytics"]').checked,
+        preferences: cookieConsentElement.querySelector('input[id="preferences"]').checked,
+      });
+    } else {
+      consentElement.dataset.active = 'false';
+      detailsElement.dataset.active = 'true';
+    }
+  });
+
+  denyButton.addEventListener('click', () => {
+    setConsent({
+      necessary: false,
+      marketing: false,
+      analytics: false,
+      preferences: false,
+    });
+  });
+
+  acceptAllButton.addEventListener('click', () => {
+    setConsent({
+      necessary: true,
+      marketing: true,
+      analytics: true,
+      preferences: true,
+    });
+  });
+</script>

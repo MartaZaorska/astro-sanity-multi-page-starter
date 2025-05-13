@@ -1,0 +1,583 @@
+---
+import Image, { ImageDataQuery, type ImageDataProps } from '@/components/ui/Image.astro';
+import sanityFetch from '@/utils/sanity.fetch';
+import imageToInlineSvg from '@/utils/image-to-inline-svg';
+
+const pathname = Astro.url.pathname;
+const { hideNavigation = false } = Astro.props;
+
+const { annotation, links, services } = await sanityFetch<{
+  annotation?: {
+    icon?: string;
+    text: string;
+  };
+  links: {
+    name: string;
+    href: string;
+    linkType: 'anchor' | 'internal';
+  }[];
+  services: {
+    name: string;
+    href: string;
+    image: ImageDataProps;
+    list?: { name: string; href: string; image: ImageDataProps }[];
+  }[];
+}>({
+  query: `
+    *[_type == "navigation"][0].header {
+      annotation {
+        "icon": icon.asset -> url,
+        text
+      },
+      links[]{
+        "name": select(
+          linkType == 'anchor' => title,
+          linkType == 'internal' => coalesce(title, internal -> name),
+          ''  
+        ),
+        linkType,
+        "href": select(
+          linkType == "internal" => internal -> slug.current,
+          linkType == "anchor" => anchor,
+          "#"
+        ),
+      },
+      "services": coalesce(
+        services[]->{
+          name,
+          "href": slug.current,
+          ${ImageDataQuery('image')}
+          "list": *[_type == "Service_Collection" && isSubPage && parentPage._ref == ^._id] | order(_createdAt asc){
+            name,
+            "href": slug.current,
+            ${ImageDataQuery('image')}
+          }  
+        },
+        *[_type == "Service_Collection" && (!defined(isSubPage) || !isSubPage)] | order(_createdAt asc) [0]{
+          name,
+          "href": slug.current,
+          ${ImageDataQuery('image')}
+          "list": *[_type == "Service_Collection" && isSubPage && parentPage._ref == ^._id] | order(_createdAt asc){
+            name,
+            "href": slug.current,
+            ${ImageDataQuery('image')}
+          } 
+        }
+      )
+    } 
+  `,
+});
+
+const svgContent = annotation?.icon ? await imageToInlineSvg(annotation.icon) : null;
+---
+
+<a
+  class='skip-link'
+  href='#main'
+>
+  Przejdź do treści głównej
+</a>
+{
+  annotation && (
+    <aside class='annotation'>
+      <div class='max-width'>
+        {svgContent ? <Fragment set:html={svgContent} /> : null}
+        <p>{annotation.text}</p>
+      </div>
+    </aside>
+  )
+}
+<header class='Header'>
+  <div class='max-width'>
+    <a
+      href='/'
+      aria-label='Przejdź do strony głównej'
+      class='logo'
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 371 261" width="371" height="261" fill="none"><title>Name</title><path fill="#000" d="M91.136 37H60.8l-31.488 66.944H28.8c0-1.195.043-2.731.128-4.608.085-1.792.213-3.84.384-6.144.17-2.219.299-4.565.384-7.04.085-2.39.17-4.693.256-6.912V37H9.344v91.392h30.208l31.36-66.176h.384c0 1.11-.043 2.56-.128 4.352a175.587 175.587 0 0 1-.384 6.016c-.085 2.219-.17 4.48-.256 6.784a180.1 180.1 0 0 0-.128 6.656v42.368h20.736V37Zm71.316 0-4.224 19.584h-27.904L125.972 37H100.5l28.032 91.776h30.848L187.796 37h-25.344Zm-13.824 56.192a162.496 162.496 0 0 1-1.536 6.144 955.105 955.105 0 0 0-1.536 7.04 352.484 352.484 0 0 0-1.408 7.168 127.78 127.78 0 0 0-1.28-7.168 955.105 955.105 0 0 0-1.536-7.04 83.149 83.149 0 0 0-1.408-6.144L135.06 74.76h18.432l-4.864 18.432ZM234.854 37l-17.92 69.504h-.512c.171-1.707.341-4.139.512-7.296.171-3.157.341-6.57.512-10.24.171-3.67.256-7.083.256-10.24V37h-20.608v91.392h32.384l16.384-63.616h.384l16.256 63.616h32.384V37H273.51v42.368c0 2.901.043 6.101.128 9.6.085 3.584.213 6.955.384 10.112s.299 5.589.384 7.296h-.384L256.358 37h-21.504Zm129.684 0h-50.944v91.392h50.944v-17.664h-27.776V93.192h25.856V75.528h-25.856V54.92h27.776V37ZM91.136 224H60.8l-31.488-66.944H28.8c0 1.195.043 2.731.128 4.608.085 1.792.213 3.84.384 6.144.17 2.219.299 4.565.384 7.04.085 2.389.17 4.693.256 6.912V224H9.344v-91.392h30.208l31.36 66.176h.384a95.6 95.6 0 0 0-.128-4.352 175.587 175.587 0 0 0-.384-6.016c-.085-2.219-.17-4.48-.256-6.784a180.113 180.113 0 0 1-.128-6.656v-42.368h20.736V224Zm71.316 0-4.224-19.584h-27.904L125.972 224H100.5l28.032-91.776h30.848L187.796 224h-25.344Zm-13.824-56.192a162.784 162.784 0 0 0-1.536-6.144 955.105 955.105 0 0 1-1.536-7.04 352.484 352.484 0 0 1-1.408-7.168 127.78 127.78 0 0 1-1.28 7.168 955.105 955.105 0 0 1-1.536 7.04 83.078 83.078 0 0 1-1.408 6.144l-4.864 18.432h18.432l-4.864-18.432ZM234.854 224l-17.92-69.504h-.512c.171 1.707.341 4.139.512 7.296.171 3.157.341 6.571.512 10.24.171 3.669.256 7.083.256 10.24V224h-20.608v-91.392h32.384l16.384 63.616h.384l16.256-63.616h32.384V224H273.51v-42.368c0-2.901.043-6.101.128-9.6.085-3.584.213-6.955.384-10.112s.299-5.589.384-7.296h-.384L256.358 224h-21.504Zm129.684 0h-50.944v-91.392h50.944v17.664h-27.776v17.536h25.856v17.664h-25.856v20.608h27.776V224Z"/></svg>
+    </a>
+    {!hideNavigation && (
+      <button
+        class='menu-button'
+        aria-controls='primary-navigation'
+        aria-expanded='false'
+        aria-label='Pokaż nawigację'
+      >
+        <span></span>
+      </button>
+      <nav id='primary-navigation'>
+        {
+          services.map(({ name, href, image, list = [] }) => (
+            <div
+              class='tab'
+              data-tab={name}
+            >
+              <button type='button'>
+                <span>{name}</span>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  width='12'
+                  height='13'
+                  viewBox='0 0 12 13'
+                  fill='none'
+                >
+                  <path
+                    stroke='#121212'
+                    d='M9.5 8 6 5 2.5 8'
+                  />
+                </svg>
+              </button>
+              <div class='tabpanel'>
+                <div class='max-width'>
+                  <a
+                    href={href}
+                    aria-current={href === pathname ? 'page' : undefined}
+                  >
+                    <Image
+                      {...image}
+                      sizes='100px'
+                    />
+                    <span>{name}</span>
+                  </a>
+                  {list.map(({ name, href, image }) => (
+                    <a
+                      href={href}
+                      aria-current={href === pathname ? 'page' : undefined}
+                    >
+                      <Image
+                        {...image}
+                        sizes='100px'
+                      />
+                      <span>{name}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))
+        }
+        {
+          links.map(({ name, href, linkType }) => (
+            <a
+              href={href}
+              {...(linkType === 'internal' ? { 'aria-current': pathname.startsWith(href) ? 'page' : undefined } : {})}
+              {...(href === '/polityka-prywatnosci' ? { target: '_blank' } : {})}
+            >
+              {name}
+            </a>
+          ))
+        }
+      </nav>
+      <div
+        class='overlay'
+        aria-hidden='true'
+      >
+      </div>
+    )}
+  </div>
+</header>
+
+<style lang='scss'>
+  .skip-link {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    background-color: var(--neutral-200);
+    padding: 0.5rem;
+    border-radius: 0.3rem;
+    border: 1px solid var(--neutral-600);
+    transition: background-color 200ms;
+    z-index: 99;
+    opacity: 0;
+    pointer-events: none;
+
+    &:focus-visible {
+      outline-offset: 0px;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    &:hover {
+      background-color: var(--neutral-100);
+    }
+  }
+
+  .annotation {
+    background-color: var(--neutral-200);
+    > div {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      justify-content: center;
+      padding: 0.5rem 0;
+
+      p {
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .Header {
+    background-color: var(--neutral-100);
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+
+    > div {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      flex-shrink: 0;
+      svg {
+        width: 60px;
+        height: 60px;
+      }
+
+      &:focus-visible {
+        outline-offset: 0;
+      }
+    }
+
+    nav {
+      z-index: 40;
+      background-color: var(--neutral-100);
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 80vw;
+      max-width: 300px;
+      height: 100vh;
+      padding: 180px 1rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      overscroll-behavior: contain;
+      overflow-y: auto;
+      transform: translateX(100%);
+      visibility: hidden;
+      transition:
+        transform 400ms 0ms,
+        visibility 1ms 400ms;
+
+      @supports (height: 100svh) {
+        height: 100svh;
+      }
+
+      @media (min-width: 48rem) {
+        background-color: transparent;
+        position: relative;
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        padding: 0;
+        flex-direction: row;
+        flex-grow: 1;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 1.5rem;
+        transform: translateX(0);
+        overscroll-behavior: none;
+        overflow-y: visible;
+        visibility: visible;
+      }
+
+      .tab {
+        button {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 0.3rem;
+          padding: 0.2rem;
+          border-radius: 0.3rem;
+          padding: 0.2rem;
+          transition: background-color 200ms;
+
+          svg {
+            transition: transform 200ms;
+            transform: rotate(180deg);
+          }
+        }
+
+        &:not([data-active='true']):has(a[aria-current='page']) button {
+          background-color: var(--neutral-200);
+        }
+
+        .tabpanel {
+          margin-top: 1rem;
+          display: none;
+
+          @media (min-width: 48rem) {
+            position: fixed;
+            background-color: var(--neutral-200);
+            transform: translate(-3px, -10px);
+            padding: 0.3rem;
+            border-bottom-left-radius: 0.2rem;
+            border-bottom-right-radius: 0.2rem;
+            border-radius: 0.3rem;
+          }
+
+          > div {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+
+            @media (min-width: 48rem) {
+              gap: 0.1rem;
+            }
+          }
+
+          a {
+            border-radius: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.2rem;
+            transition: background-color 200ms;
+
+            img {
+              width: 50px;
+              height: 32.5px;
+            }
+
+            &[aria-current='page'] {
+              background-color: var(--neutral-100);
+            }
+
+            &:focus-visible {
+              outline-offset: 0;
+            }
+
+            @media (min-width: 48rem) {
+              padding: 0.4rem;
+              &:hover {
+                background-color: var(--neutral-100);
+              }
+            }
+          }
+        }
+
+        &[data-active='true'] {
+          button svg {
+            transform: rotate(0deg);
+          }
+
+          .tabpanel {
+            display: block;
+          }
+        }
+      }
+
+      > a {
+        padding: 0.2rem;
+        border-radius: 0.3rem;
+        &[aria-current='page'] {
+          background-color: var(--neutral-200);
+        }
+      }
+    }
+
+    .menu-button {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      user-select: none;
+      z-index: 50;
+
+      @media (min-width: 48rem) {
+        display: none;
+      }
+
+      span {
+        width: 1.3125rem;
+        border: 0.5px solid;
+        border-color: var(--neutral-600);
+        border-radius: 100vmax;
+        position: relative;
+        pointer-events: none;
+        transition: border-color 100ms;
+
+        &::before,
+        &::after {
+          content: '';
+          width: 1.3125rem;
+          border: 0.5px solid;
+          border-color: var(--neutral-600);
+          border-radius: 100vmax;
+          position: absolute;
+          left: calc(50% - 0.65625rem);
+          pointer-events: none;
+          transition:
+            border-color 100ms,
+            transform 200ms;
+        }
+
+        &::before {
+          top: -0.5rem;
+        }
+
+        &::after {
+          top: calc(0.5rem - 0.8px);
+        }
+      }
+
+      @media (pointer: fine) {
+        &:hover {
+          span,
+          span::after,
+          span::before {
+            border-color: var(--neutral-700);
+          }
+
+          &[aria-expanded='true'] span {
+            border-color: transparent;
+          }
+        }
+      }
+
+      &[aria-expanded='true'] {
+        span {
+          border-color: transparent;
+
+          &::before {
+            transform: translateY(0.5rem) rotate(-135deg);
+          }
+
+          &::after {
+            transform: translateY(calc(-0.5rem + 0.8px)) rotate(-45deg);
+          }
+        }
+      }
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      visibility: hidden;
+      display: none;
+      pointer-events: none;
+      background-color: rgba(220, 220, 220, 0.5);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      z-index: 10;
+    }
+
+    &[data-opened='true'] {
+      nav {
+        transform: translateX(0);
+        visibility: visible;
+        transition:
+          transform 400ms 1ms,
+          visibility 1ms 0ms;
+      }
+
+      .overlay {
+        visibility: visible;
+        display: block;
+        pointer-events: auto;
+        @media (min-width: 48rem) {
+          visibility: hidden;
+          display: none;
+          pointer-events: none;
+        }
+      }
+    }
+  }
+</style>
+<script>
+  let lastScrollY = NaN;
+  const header = document.querySelector<HTMLElement>('.Header')!;
+  const menuButton = header.querySelector<HTMLButtonElement>('.menu-button')!;
+  const overlay = header.querySelector<HTMLDivElement>('.overlay')!;
+  const nav = header.querySelector<HTMLElement>('nav')!;
+  const tabs = header.querySelectorAll<HTMLDivElement>('.tab[data-tab]') ?? [];
+
+  tabs.forEach(tab => {
+    const button = tab.querySelector('button');
+
+    tab.addEventListener('focusout', () => {
+      const isFocus = !!header.querySelector(`[data-tab="${tab.dataset.tab}"]:focus-within`);
+      if (!isFocus) resetTabsAndToggleListeners(true);
+    });
+
+    button?.addEventListener('click', () => {
+      const isActiveTab = tab.dataset.active === 'true';
+      resetTabsAndToggleListeners(isActiveTab);
+      if (!isActiveTab) tab.dataset.active = 'true';
+    });
+  });
+
+  menuButton.addEventListener('click', () => toggleMenu(header.dataset.opened === 'true'));
+
+  overlay.addEventListener('click', () => toggleMenu(true));
+
+  nav.addEventListener('focusout', () => {
+    const isFocus = !!document.querySelector('.Header:focus-within');
+    if (!isFocus) toggleMenu(true);
+  });
+
+  function toggleMenu(close: boolean) {
+    lastScrollY = NaN;
+    header.dataset.opened = (!close).toString();
+    menuButton.ariaExpanded = (!close).toString();
+    resetTabsAndToggleListeners(close);
+  }
+
+  function resetTabsAndToggleListeners(disable: boolean) {
+    tabs.forEach(tab => (tab.dataset.active = 'false'));
+    if (disable) {
+      document.removeEventListener('click', documentClickHandler);
+      window.removeEventListener('scroll', scrollHandler);
+      document.removeEventListener('keydown', keyDownHandler);
+    } else {
+      document.addEventListener('click', documentClickHandler);
+      window.addEventListener('scroll', scrollHandler);
+      document.addEventListener('keydown', keyDownHandler);
+    }
+  }
+
+  function getActiveTab() {
+    return header.querySelector<HTMLDivElement>(".tab[data-active='true']");
+  }
+
+  function documentClickHandler(e: MouseEvent) {
+    const activeTab = getActiveTab();
+    if (activeTab && !activeTab?.contains(e.target as Node)) resetTabsAndToggleListeners(true);
+  }
+
+  function keyDownHandler(e: KeyboardEvent) {
+    if (e.key === 'Escape') {
+      toggleMenu(true);
+      return;
+    }
+
+    const activeTab = getActiveTab();
+    if (!activeTab) return;
+
+    const options = activeTab.querySelectorAll<HTMLAnchorElement>('a');
+    const currentIndex = Array.from(options).findIndex(option => option === document.activeElement);
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      options[currentIndex === options.length - 1 ? 0 : currentIndex + 1].focus();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      options[currentIndex === 0 || currentIndex === -1 ? options.length - 1 : currentIndex - 1].focus();
+    }
+  }
+
+  function scrollHandler() {
+    const currentScrollY = window.scrollY;
+    if (isNaN(lastScrollY)) lastScrollY = currentScrollY;
+    if (Math.abs(currentScrollY - lastScrollY) > 80) toggleMenu(true);
+  }
+</script>

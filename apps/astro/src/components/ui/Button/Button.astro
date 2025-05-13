@@ -1,0 +1,14 @@
+---
+import BaseButton, { type Props as ButtonDataProps } from './Button.tsx';
+
+type Props = ButtonDataProps;
+
+const { ...props } = Astro.props;
+---
+
+<BaseButton {...props}>
+  <span>
+    {props.text || <slot />}
+  </span>
+  <!--Tutaj można coś dodać w stylu svg strzałek lub obrazka -->
+</BaseButton>

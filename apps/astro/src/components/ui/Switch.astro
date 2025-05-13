@@ -1,0 +1,116 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+type Props = {
+  labelProps?: HTMLAttributes<'label'>;
+  inputProps?: HTMLAttributes<'input'>;
+};
+
+const { inputProps, labelProps } = Astro.props;
+---
+
+<label
+  data-switch
+  {...labelProps}
+>
+  <input
+    type='checkbox'
+    {...inputProps}
+  />
+  <div class='toggle-icon'>
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      width='11'
+      height='9'
+      viewBox='0 0 11 9'
+      fill='none'
+    >
+      <path
+        stroke='#121212'
+        d='m1 5.418 2.571 2.946L10 1'
+      ></path>
+    </svg>
+  </div>
+  <div><slot /></div>
+</label>
+
+<style lang='scss'>
+  [data-switch] {
+    width: fit-content;
+    padding-top: 0.125rem;
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    cursor: pointer;
+
+    input {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .toggle-icon {
+      position: relative;
+      width: 58px;
+      height: 34px;
+      border-radius: 100vmax;
+      background-color: var(--neutral-200);
+      flex-shrink: 0;
+      display: grid;
+      align-items: center;
+      transition: background-color 100ms;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        height: 30px;
+        width: 30px;
+        background-color: var(--neutral-100);
+        border-radius: 50%;
+        z-index: 1;
+        transition: transform 200ms;
+      }
+
+      svg {
+        z-index: 10;
+        margin-left: 12px;
+        opacity: 0;
+        transition:
+          transform 200ms,
+          opacity 200ms;
+      }
+    }
+
+    input:checked + .toggle-icon {
+      &::before {
+        transform: translateX(24px);
+      }
+
+      svg {
+        opacity: 1;
+        transform: translateX(24px);
+      }
+    }
+
+    input:disabled + .toggle-icon {
+      opacity: 0.8;
+    }
+
+    input:focus-visible + .toggle-icon {
+      outline: 1px solid var(--neutral-600);
+      outline-offset: -1px;
+    }
+
+    @media (pointer: fine) {
+      input:not(:checked) + .toggle-icon:hover {
+        background-color: rgb(219, 219, 219);
+      }
+    }
+
+    &:has(input:disabled) {
+      cursor: not-allowed;
+    }
+  }
+</style>

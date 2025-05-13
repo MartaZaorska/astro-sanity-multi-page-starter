@@ -1,0 +1,17 @@
+---
+import { slugify } from '@/utils/slugify';
+
+// eslint-disable-next-line no-unused-vars
+const { node, index, isInline, ...attrs } = Astro.props;
+
+const props = {
+  ...attrs,
+  ...(node.plainText ? { id: slugify(node.plainText) } : {}),
+};
+
+const HeadingTag = node.style as 'h2' | 'h3' | 'h4';
+---
+
+<HeadingTag {...props}>
+  <slot />
+</HeadingTag>

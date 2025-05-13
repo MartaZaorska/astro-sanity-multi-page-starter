@@ -1,0 +1,22 @@
+.Button {
+  padding: 0.6rem 0.9rem;
+  color: var(--neutral-100);
+  border-radius: 0.4rem;
+  transition: background-color 200ms;
+  display: block;
+  transition: opacity 200ms var(--easing);
+
+  &[data-theme='primary'] {
+    background-color: var(--primary-500);
+    opacity: 0.9;
+  }
+
+  &[data-theme='secondary'] {
+    background-color: var(--secondary-500);
+    opacity: 0.9;
+  }
+
+  &:hover {
+    opacity: 1;
+  }
+}

@@ -1,0 +1,51 @@
+.Checkbox {
+  min-height: 72px;
+  margin-bottom: 1rem;
+  .control {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+
+    .box {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border: 1px solid;
+      border-color: #cdcdcd;
+      transition: border-color 200ms;
+
+      input {
+        position: absolute;
+        opacity: 0;
+        &:checked + svg {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      svg {
+        transform: scale(0);
+        opacity: 0;
+        transition:
+          transform 200ms,
+          opacity 200ms;
+      }
+
+      &:has(input:focus-visible) {
+        outline: 2px solid var(--neutral-700);
+        outline-offset: 0;
+      }
+    }
+
+    &:hover .box {
+      border-color: var(--neutral-600);
+    }
+
+    .box:has(input[aria-invalid='true']) {
+      border-color: var(--error-400);
+    }
+  }
+}

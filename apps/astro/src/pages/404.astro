@@ -1,0 +1,22 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import pageFetch from '@/utils/page.fetch';
+import Components from '@/components/Components.astro';
+import BreadcrumbsSchema from '@/schema/BreadcrumbsSchema.astro';
+
+const data = await pageFetch({ slug: '/404' });
+
+if(!data) return null;
+const { page: { name, slug, components }, metadata } = data;
+---
+
+<Layout
+  {...metadata}
+  hideNavigation={true}
+>
+  <BreadcrumbsSchema
+    slot='head'
+    data={[{ name: name, path: slug }]}
+  />
+  {components && <Components data={components} />}
+</Layout>

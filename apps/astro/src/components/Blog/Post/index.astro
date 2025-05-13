@@ -1,0 +1,83 @@
+---
+import type { PortableTextBlock } from '@portabletext/types';
+import { toPlainText } from 'astro-portabletext';
+import ContentPT, { ContentPTQuery, type Props as ContentPTProps } from './content-pt/index.astro';
+import Hero, { HeroQuery, type HeroProps } from './Hero.astro';
+import Nav from './Nav.astro';
+import { getEstimatedReadingTime } from '@/utils/get-estimated-reading-time';
+
+export type ContentProps = {
+  hero: HeroProps;
+  content: ContentPTProps['value'];
+};
+
+export const ContentQuery = `
+  ${HeroQuery}
+  ${ContentPTQuery}
+`;
+
+const { hero, content } = Astro.props as ContentProps;
+
+const valueArray = Array.isArray(content) ? content : [content];
+const value = valueArray.map(item =>
+  item?._type === 'block' && ['normal', 'h2', 'h3', 'h4'].includes(item?.style)
+    ? {
+        ...item,
+        plainText: toPlainText(item as PortableTextBlock)
+          .trim()
+          .replace('❧ ', ''),
+      }
+    : item
+);
+
+const headings = value.filter(item => item?._type === 'block' && ['h2', 'h3'].includes(item?.style));
+---
+
+<article class='content max-width'>
+  <Nav headings={headings} />
+  <section class='content-body'>
+    <Hero
+      {...hero}
+      readingTime={getEstimatedReadingTime(value)}
+    />
+    <div class='content-pt'>
+      <ContentPT value={value} />
+    </div>
+  </section>
+</article>
+<style lang='scss'>
+  .content {
+    margin: 4rem auto;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: flex-start;
+
+    :global(.content-nav) {
+      margin-bottom: 2rem;
+      @media (min-width: 75rem) {
+        max-width: 30rem;
+        position: sticky;
+        top: 95px;
+      }
+    }
+
+    .content-body {
+      max-width: 48rem;
+    }
+
+    .content-pt {
+      :global(h2),
+      :global(h3),
+      :global(p),
+      :global(ul),
+      :global(ol) {
+        margin-bottom: 1rem;
+      }
+
+      :global(h2:not(:first-child)) {
+        margin-top: 3rem;
+      }
+    }
+  }
+</style>

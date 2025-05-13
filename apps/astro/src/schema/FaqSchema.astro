@@ -1,0 +1,35 @@
+---
+import type { PortableTextValue } from '@/components/ui/portable-text';
+import { portableTextToHTML } from '@/utils/portable-text-to-html';
+
+type Props = {
+  data?: {
+    question: PortableTextValue;
+    schemaAnswer: PortableTextValue;
+  }[];
+};
+
+const { data = [] } = Astro.props;
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  '@id': `${Astro.url.origin}/#faq`,
+  mainEntity: await Promise.all(
+    data.map(async ({ question, schemaAnswer }) => ({
+      '@type': 'Question',
+      name: await portableTextToHTML(question),
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: await portableTextToHTML(schemaAnswer),
+      },
+    }))
+  ),
+};
+---
+
+<script
+  is:inline
+  type='application/ld+json'
+  set:html={JSON.stringify(schema)}
+/>

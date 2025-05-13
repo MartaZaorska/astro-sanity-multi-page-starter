@@ -1,0 +1,39 @@
+---
+import PortableText, { PortableTextQuery, type PortableTextValue } from '@/components/ui/portable-text';
+
+export const QuoteQuery = `
+  _type == "Quote" => {
+    ${PortableTextQuery('text')}
+    author
+  },
+`;
+
+type Props = {
+  node: {
+    text: PortableTextValue;
+    author?: string;
+  };
+};
+
+const {
+  node: { text, author },
+} = Astro.props;
+---
+
+<blockquote class='Quote'>
+  <PortableText value={text} />
+  {author && <cite>{author}</cite>}
+</blockquote>
+<style lang='scss'>
+  .Quote {
+    margin-top: 1.5rem;
+    border: 1px solid var(--primary-500);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    font-weight: 700;
+    cite {
+      text-align: right;
+      margin-top: 0.5rem;
+    }
+  }
+</style>
