@@ -28,15 +28,11 @@ const { _createdAt, _updatedAt, heading, paragraph, image, readingTime } = Astro
 
 <section class='Hero'>
   <header>
-    <p>{readingTime}</p>
+    <p class="reading-time">{readingTime}</p>
     <PortableText
       value={heading}
       heading='h1'
     />
-    <p class='date'>
-      <span>Utworzono: {formatDate(_createdAt)}</span>
-      <span>Ostatnia aktualizacja: {formatDate(_updatedAt)}</span>
-    </p>
     {
       paragraph && (
         <PortableText
@@ -45,7 +41,13 @@ const { _createdAt, _updatedAt, heading, paragraph, image, readingTime } = Astro
         />
       )
     }
-    <Button class='share'>Udostępnij</Button>
+    <div class="info">
+      <p class='date'>
+        <span>Utworzono: {formatDate(_createdAt)}</span>
+        <span>Ostatnia aktualizacja: {formatDate(_updatedAt)}</span>
+      </p>
+      <Button>Udostępnij</Button>
+    </div>
   </header>
   <Image
     {...image}
@@ -59,17 +61,12 @@ const { _createdAt, _updatedAt, heading, paragraph, image, readingTime } = Astro
     margin-bottom: 2rem;
 
     header {
-      max-width: 36rem;
-
       h1 {
         margin: 1rem 0;
       }
 
-      p {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        gap: 0.2rem;
+      .reading-time {
+        font-size: 0.9rem;
       }
 
       .paragraph {
@@ -81,8 +78,18 @@ const { _createdAt, _updatedAt, heading, paragraph, image, readingTime } = Astro
       margin: 2rem 0;
     }
 
-    .share {
-      margin-top: 1.5rem;
+    .info {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+
+      .date {
+        display: grid;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+      }
     }
   }
 </style>
