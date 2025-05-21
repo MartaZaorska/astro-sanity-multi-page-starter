@@ -292,9 +292,8 @@ const svgContent = annotation?.icon ? await imageToInlineSvg(annotation.icon) : 
           display: flex;
           align-items: center;
           gap: 0.3rem;
-          padding: 0.2rem;
+          padding: 0.4rem;
           border-radius: 0.3rem;
-          padding: 0.2rem;
           transition: background-color 200ms;
 
           svg {
@@ -308,7 +307,7 @@ const svgContent = annotation?.icon ? await imageToInlineSvg(annotation.icon) : 
         }
 
         .tabpanel {
-          margin-top: 1rem;
+          margin-top: 0.5rem;
           display: none;
 
           @media (min-width: 48rem) {
@@ -319,6 +318,7 @@ const svgContent = annotation?.icon ? await imageToInlineSvg(annotation.icon) : 
             border-bottom-left-radius: 0.2rem;
             border-bottom-right-radius: 0.2rem;
             border-radius: 0.3rem;
+            margin-top: 1rem;
           }
 
           > div {
@@ -374,7 +374,7 @@ const svgContent = annotation?.icon ? await imageToInlineSvg(annotation.icon) : 
       }
 
       > a {
-        padding: 0.2rem;
+        padding: 0.4rem;
         border-radius: 0.3rem;
         &[aria-current='page'] {
           background-color: var(--neutral-200);
@@ -506,6 +506,7 @@ const svgContent = annotation?.icon ? await imageToInlineSvg(annotation.icon) : 
     const button = tab.querySelector('button');
 
     tab.addEventListener('focusout', () => {
+      if (header.dataset.opened === 'true' || window.innerWidth < 768) return;
       const isFocus = !!header.querySelector(`[data-tab="${tab.dataset.tab}"]:focus-within`);
       if (!isFocus) resetTabsAndToggleListeners(true);
     });

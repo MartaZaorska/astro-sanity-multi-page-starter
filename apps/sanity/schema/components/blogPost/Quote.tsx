@@ -1,10 +1,11 @@
+import { PenLineIcon } from 'lucide-react';
 import { defineField } from 'sanity';
 import { sectionPreview } from '../../../utils/section-preview';
 import { toPlainText } from '../../../utils/to-plain-text';
 
 const name = 'Quote';
 const title = 'Quote';
-const icon = '❝';
+const icon = () => <PenLineIcon size={15} />;
 
 export default defineField({
   name,

@@ -1,7 +1,13 @@
 import type { LucideIcon } from 'lucide-react';
 import { Tooltip, Box } from '@sanity/ui';
 
-export const sectionPreview = ({ imgUrl, icon }: { imgUrl: string; icon: LucideIcon | string }) => {
+export const sectionPreview = ({
+  imgUrl,
+  icon,
+}: {
+  imgUrl: string;
+  icon: LucideIcon | React.FC | string;
+}) => {
   const Icon = icon;
   const Preview = () => (
     <Tooltip
@@ -19,19 +25,7 @@ export const sectionPreview = ({ imgUrl, icon }: { imgUrl: string; icon: LucideI
         </Box>
       }
     >
-      <span
-        style={{
-          width: '2rem',
-          height: '2rem',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'zoom-in',
-          margin: '-0.75rem',
-        }}
-      >
-        {typeof icon === 'string' ? icon : <Icon />}
-      </span>
+      <span style={{ cursor: 'zoom-in' }}>{typeof icon === 'string' ? icon : <Icon />}</span>
     </Tooltip>
   );
 

@@ -89,7 +89,7 @@ export const PortableText = ({
               name: 'link',
               type: 'object',
               title: 'Link',
-              icon: () => <LinkIcon size={18} />,
+              icon: () => <LinkIcon size={15} />,
               fields: [
                 defineField({
                   name: 'linkType',
@@ -108,7 +108,8 @@ export const PortableText = ({
                   name: 'external',
                   type: 'string',
                   title: 'URL',
-                  description: 'Specify the full URL. Ensure it starts with "https://", "mailto:" or "tel:" protocol.',
+                  description:
+                    'Specify the full URL. Ensure it starts with "https://", "mailto:" or "tel:" protocol.',
                   hidden: ({ parent }) => parent?.linkType !== 'external',
                   validation: Rule =>
                     Rule.custom((value, { parent }) => {
