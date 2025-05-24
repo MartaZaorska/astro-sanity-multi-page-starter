@@ -1,4 +1,4 @@
-import { type FieldDefinition, defineType, defineField } from 'sanity';
+import { type FieldDefinition, defineType, defineField, type FieldGroupDefinition } from 'sanity';
 import { FileTextIcon, SearchIcon, type LucideIcon } from 'lucide-react';
 
 type Page =
@@ -15,6 +15,7 @@ type Props = {
   title: string;
   icon: LucideIcon | React.FC | string;
   withComponents?: boolean;
+  additionalGroups?: Array<FieldGroupDefinition>;
   additionalFields?: FieldDefinition<
     | 'string'
     | 'number'
@@ -44,6 +45,7 @@ export const definePage = ({
   title,
   icon,
   withComponents = true,
+  additionalGroups = [],
   additionalFields = [],
 }: Props) =>
   defineType({
@@ -82,6 +84,7 @@ export const definePage = ({
         title: 'SEO',
         icon: () => <SearchIcon size={18} />,
       },
+      ...additionalGroups,
     ],
     preview: {
       select: {
