@@ -1,19 +1,14 @@
-import { StickyNoteIcon, FileTextIcon, SearchIcon } from 'lucide-react';
-import { defineField, defineType } from 'sanity';
+import { StickyNoteIcon } from 'lucide-react';
+import { defineField } from 'sanity';
 import { defineSlugForDocument } from '../../utils/define-slug-for-document';
+import { definePage } from '../../templates/page';
 import BlogPostContent from '../components/blogPost';
 
-const name = 'BlogPost_Collection';
-const title = 'Blog Post Collection';
-const icon = StickyNoteIcon;
-
-export default defineType({
-  name,
-  title,
-  icon,
-  type: 'document',
-  options: { documentPreview: true },
-  fields: [
+export default definePage({
+  name: 'BlogPost_Collection',
+  title: 'Blog Post Collection',
+  icon: StickyNoteIcon,
+  additionalFields: [
     defineField({
       name: 'name',
       type: 'string',
@@ -22,7 +17,10 @@ export default defineType({
       group: 'content',
       validation: Rule => Rule.required(),
     }),
-    ...defineSlugForDocument({ source: 'name', prefix: '/blog' }).map(field => ({ ...field, group: 'content' })),
+    ...defineSlugForDocument({ source: 'name', prefix: '/blog' }).map(field => ({
+      ...field,
+      group: 'content',
+    })),
     defineField({
       name: 'heading',
       type: 'Heading',
@@ -62,37 +60,5 @@ export default defineType({
       group: 'content',
     }),
     BlogPostContent,
-    defineField({
-      name: 'components',
-      type: 'components',
-      title: 'Page Components (optional)',
-      description: 'Those components will be displayed after the content of the blog post.',
-      group: 'content',
-    }),
-    defineField({
-      name: 'seo',
-      type: 'seo',
-      title: 'SEO',
-      group: 'seo',
-    }),
-  ],
-  preview: {
-    select: {
-      title: 'name',
-      subtitle: 'slug.current',
-      media: 'image',
-    },
-  },
-  groups: [
-    {
-      name: 'content',
-      title: 'Content',
-      icon: () => <FileTextIcon size={18} />,
-    },
-    {
-      name: 'seo',
-      title: 'SEO',
-      icon: () => <SearchIcon size={18} />,
-    },
   ],
 });

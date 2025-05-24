@@ -1,19 +1,14 @@
-import { PencilRulerIcon, FileTextIcon, SearchIcon } from 'lucide-react';
-import { defineField, defineType } from 'sanity';
+import { PencilRulerIcon } from 'lucide-react';
+import { defineField } from 'sanity';
 import { defineSlugForDocument } from '../../utils/define-slug-for-document';
 import { filterReferences } from '../../utils/filter-references';
+import { definePage } from '../../templates/page';
 
-const name = 'Service_Collection';
-const title = 'Services';
-const icon = PencilRulerIcon;
-
-export default defineType({
-  name,
-  type: 'document',
-  title,
-  icon,
-  options: { documentPreview: true },
-  fields: [
+export default definePage({
+  name: 'Service_Collection',
+  title: 'Services',
+  icon: PencilRulerIcon,
+  additionalFields: [
     defineField({
       name: 'name',
       type: 'string',
@@ -40,7 +35,10 @@ export default defineType({
       to: [{ type: 'Service_Collection' }],
       options: {
         disableNew: true,
-        filter: filterReferences({ checkSelfReference: true, additionalFilter: 'defined(slug.current) && !isSubPage' }),
+        filter: filterReferences({
+          checkSelfReference: true,
+          additionalFilter: 'defined(slug.current) && !isSubPage',
+        }),
       },
       group: 'content',
       hidden: ({ parent }) => !parent?.isSubPage,
@@ -64,42 +62,5 @@ export default defineType({
       group: 'content',
       validation: Rule => Rule.required(),
     }),
-    defineField({
-      name: 'components',
-      type: 'components',
-      title: 'Page Components',
-      group: 'content',
-    }),
-    defineField({
-      name: 'seo',
-      type: 'seo',
-      title: 'SEO',
-      group: 'seo',
-    }),
   ],
-  groups: [
-    {
-      name: 'content',
-      title: 'Content',
-      icon: () => <FileTextIcon size={18} />,
-    },
-    {
-      name: 'seo',
-      title: 'SEO',
-      icon: () => <SearchIcon size={18} />,
-    },
-  ],
-  preview: {
-    select: {
-      name: 'name',
-      slug: 'slug.current',
-      image: 'image',
-    },
-    prepare: ({ name, slug, image }) => ({
-      title: name,
-      subtitle: slug,
-      media: image,
-      icon,
-    }),
-  },
 });

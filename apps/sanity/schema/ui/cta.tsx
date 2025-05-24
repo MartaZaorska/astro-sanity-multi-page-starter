@@ -1,8 +1,7 @@
 import { PointerIcon } from 'lucide-react';
 import { defineField, defineType } from 'sanity';
 import { Tooltip, Box, Text } from '@sanity/ui';
-import { isValidUrl } from '../../utils/is-valid-url';
-import { InternalLinkableTypes } from '../../structure/internal-linkable-types';
+import { getLinkFields } from './link';
 
 const name = 'cta';
 const title = 'Call To Action (CTA)';
@@ -38,79 +37,7 @@ export default defineType({
       initialValue: 'primary',
       validation: Rule => Rule.required(),
     }),
-    defineField({
-      name: 'linkType',
-      type: 'string',
-      title: 'Type',
-      description: (
-        <>
-          <em>External</em> (other websites), <em>Internal</em> (within your site), or <em>Anchor</em> (section on same
-          page)
-        </>
-      ),
-      options: {
-        list: ['external', 'internal', 'anchor'],
-        layout: 'radio',
-        direction: 'horizontal',
-      },
-      initialValue: 'external',
-      validation: Rule => Rule.required(),
-    }),
-    defineField({
-      name: 'external',
-      type: 'string',
-      title: 'URL',
-      description: 'Specify the full URL. Ensure it starts with "https://" and is a valid URL.',
-      hidden: ({ parent }) => parent?.linkType !== 'external',
-      validation: Rule =>
-        Rule.custom((value, { parent }) => {
-          const type = (parent as { linkType?: string })?.linkType;
-          if (type === 'external') {
-            if (!value) return 'URL is required';
-            if (!value.startsWith('https://')) {
-              return 'External link must start with the "https://" protocol';
-            }
-            if (!isValidUrl(value)) return 'Invalid URL';
-          }
-          return true;
-        }),
-    }),
-    defineField({
-      name: 'internal',
-      type: 'reference',
-      title: 'Internal reference to page',
-      description: 'Select an internal page to link to.',
-      to: InternalLinkableTypes,
-      options: {
-        disableNew: true,
-        filter: 'defined(slug.current)',
-      },
-      hidden: ({ parent }) => parent?.linkType !== 'internal',
-      validation: Rule =>
-        Rule.custom((value, { parent }) => {
-          const type = (parent as { linkType?: string })?.linkType;
-          if (type === 'internal' && !value?._ref) return 'You have to choose internal page to link to.';
-          return true;
-        }),
-    }),
-    defineField({
-      name: 'anchor',
-      type: 'string',
-      title: 'Anchor ID',
-      description: 'Enter the ID of the section to scroll to (with the # symbol)',
-      hidden: ({ parent }) => parent?.linkType !== 'anchor',
-      validation: Rule => [
-        Rule.custom((value, { parent }) => {
-          const linkType = (parent as { linkType?: string })?.linkType;
-          if (linkType !== 'anchor') return true;
-          if (!value) return 'Anchor ID is required';
-          if (!value.startsWith('#')) return 'Include the # symbol';
-          if (!/^#[a-zA-Z0-9_-]+$/.test(value))
-            return 'Anchor ID should only contain letters, numbers, hyphens or underscores';
-          return true;
-        }),
-      ],
-    }),
+    ...getLinkFields({ allowInternalWithAnchor: true }),
   ],
   preview: {
     select: {
@@ -124,8 +51,8 @@ export default defineType({
     prepare({ title, theme, linkType, external, internal, anchor }) {
       let subtitle = '';
       if (linkType === 'external') subtitle = external;
-      else if (linkType === 'internal') subtitle = internal;
-      else if (linkType === 'anchor') subtitle = `#${anchor}`;
+      else if (linkType === 'internal') subtitle = `${internal}${anchor ? anchor : ''}`;
+      else if (linkType === 'anchor') subtitle = anchor;
 
       return {
         title: `${title}`,

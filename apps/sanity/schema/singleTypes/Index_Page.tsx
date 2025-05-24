@@ -1,48 +1,12 @@
-import { HomeIcon, FileTextIcon, SearchIcon } from 'lucide-react';
-import { defineField, defineType } from 'sanity';
+import { HomeIcon } from 'lucide-react';
 import { defineSlugForDocument } from '../../utils/define-slug-for-document';
+import { definePage } from '../../templates/page';
 
-const name = 'Index_Page';
-const title = 'Homepage';
-const slug = '/';
-
-export default defineType({
-  name,
-  title,
+export default definePage({
+  name: 'Index_Page',
+  title: 'Homepage',
   icon: HomeIcon,
-  type: 'document',
-  options: { documentPreview: true },
-  fields: [
-    ...defineSlugForDocument({ slug }).map(field => ({ ...field, group: 'content' })),
-    defineField({
-      name: 'components',
-      type: 'components',
-      title: 'Page Components',
-      group: 'content',
-    }),
-    defineField({
-      name: 'seo',
-      type: 'seo',
-      title: 'SEO',
-      group: 'seo',
-    }),
+  additionalFields: [
+    ...defineSlugForDocument({ slug: '/' }).map(field => ({ ...field, group: 'content' })),
   ],
-  groups: [
-    {
-      name: 'content',
-      title: 'Content',
-      icon: () => <FileTextIcon size={18} />,
-    },
-    {
-      name: 'seo',
-      title: 'SEO',
-      icon: () => <SearchIcon size={18} />,
-    },
-  ],
-  preview: {
-    prepare: () => ({
-      title,
-      subtitle: slug,
-    }),
-  },
 });

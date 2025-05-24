@@ -1,17 +1,14 @@
-import { TagIcon, FileTextIcon, SearchIcon } from 'lucide-react';
-import { defineField, defineType } from 'sanity';
+import { TagIcon } from 'lucide-react';
+import { defineField } from 'sanity';
 import { defineSlugForDocument } from '../../utils/define-slug-for-document';
+import { definePage } from '../../templates/page';
 
-const name = 'BlogCategory_Collection';
-const title = 'Blog Category Collection';
-const icon = TagIcon;
-
-export default defineType({
-  name,
-  title,
-  icon,
-  type: 'document',
-  fields: [
+export default definePage({
+  name: 'BlogCategory_Collection',
+  title: 'Blog Category Collection',
+  icon: TagIcon,
+  withComponents: false,
+  additionalFields: [
     defineField({
       name: 'name',
       type: 'string',
@@ -39,31 +36,5 @@ export default defineType({
       group: 'content',
       validation: Rule => Rule.required(),
     }),
-
-    defineField({
-      name: 'seo',
-      type: 'seo',
-      title: 'SEO',
-      group: 'seo',
-    }),
-  ],
-  preview: {
-    select: {
-      title: 'name',
-      subtitle: 'slug.current',
-      icon: 'icon',
-    },
-  },
-  groups: [
-    {
-      name: 'content',
-      title: 'Content',
-      icon: () => <FileTextIcon size={18} />,
-    },
-    {
-      name: 'seo',
-      title: 'SEO',
-      icon: () => <SearchIcon size={18} />,
-    },
   ],
 });

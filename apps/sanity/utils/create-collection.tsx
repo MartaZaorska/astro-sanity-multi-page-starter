@@ -9,7 +9,23 @@ export const createCollection = (S: StructureBuilder, name: string) => {
     icon: React.ReactNode;
     options: { documentPreview?: boolean };
   };
+
   const documentPreview = options?.documentPreview ?? false;
+
+  const views = [
+    S.view
+      .form()
+      .title('Editor')
+      .icon(() => <PenIcon size={18} />),
+    ...(documentPreview
+      ? [
+          S.view
+            .component(Preview)
+            .title('Preview')
+            .icon(() => <EyeIcon size={18} />),
+        ]
+      : []),
+  ];
 
   return S.listItem()
     .id(name)
@@ -18,24 +34,6 @@ export const createCollection = (S: StructureBuilder, name: string) => {
     .child(
       S.documentTypeList(name)
         .title(title)
-        .child(documentId =>
-          S.document()
-            .documentId(documentId)
-            .schemaType(name)
-            .views([
-              S.view
-                .form()
-                .title('Editor')
-                .icon(() => <PenIcon size={18} />),
-              ...(documentPreview
-                ? [
-                    S.view
-                      .component(Preview)
-                      .title('Preview')
-                      .icon(() => <EyeIcon size={18} />),
-                  ]
-                : []),
-            ])
-        )
+        .child(documentId => S.document().documentId(documentId).schemaType(name).views(views))
     );
 };
