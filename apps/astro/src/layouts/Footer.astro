@@ -40,7 +40,7 @@ const { socials, footer, gtmId } = await sanityFetch<{
           ),
           linkType,
           "href": select(
-            linkType == "internal" => internal -> slug.current,
+            linkType == "internal" => internal -> slug.current + coalesce(anchor, ""),
             linkType == "anchor" => anchor,
             "#"
           ),

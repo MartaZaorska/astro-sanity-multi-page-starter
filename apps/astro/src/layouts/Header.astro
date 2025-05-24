@@ -37,7 +37,7 @@ const { annotation, links, services } = await sanityFetch<{
         ),
         linkType,
         "href": select(
-          linkType == "internal" => internal -> slug.current,
+          linkType == "internal" => internal -> slug.current + coalesce(anchor, ""),
           linkType == "anchor" => anchor,
           "#"
         ),
@@ -263,10 +263,6 @@ const svgContent = annotation?.icon ? await imageToInlineSvg(annotation.icon) : 
       transition:
         transform 400ms 0ms,
         visibility 1ms 400ms;
-
-      @supports (height: 100svh) {
-        height: 100svh;
-      }
 
       @media (min-width: 48rem) {
         background-color: transparent;
@@ -518,11 +514,11 @@ const svgContent = annotation?.icon ? await imageToInlineSvg(annotation.icon) : 
     });
   });
 
-  menuButton.addEventListener('click', () => toggleMenu(header.dataset.opened === 'true'));
+  if(menuButton) menuButton.addEventListener('click', () => toggleMenu(header.dataset.opened === 'true'));
 
-  overlay.addEventListener('click', () => toggleMenu(true));
+  if(overlay) overlay.addEventListener('click', () => toggleMenu(true));
 
-  nav.addEventListener('focusout', () => {
+  if(nav) nav.addEventListener('focusout', () => {
     const isFocus = !!document.querySelector('.Header:focus-within');
     if (!isFocus) toggleMenu(true);
   });
