@@ -9,6 +9,8 @@ export function getEstimatedReadingTime(content: PortableTextProps['value']) {
       return `${text} ${block.author || ''}`;
     }
 
+    // As more custom blocks are added, their text content should be handled here as well
+
     return '';
   }
 
