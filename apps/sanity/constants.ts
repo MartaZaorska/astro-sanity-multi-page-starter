@@ -38,7 +38,7 @@ export const API_VERSION: string = '2024-05-12';
  * Used to identify the Sanity Studio instance in the application.
  * @constant
  */
-export const STUDIO_HOST: string = 'starter-multi-page-studio-host';
+export const STUDIO_HOST: string = 'starter-multi-page-martazaorska-studio-host';
 
 /**
  * Application title.
