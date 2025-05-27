@@ -6,8 +6,6 @@ import Listing, { type ListingProps, ListingQuery } from '@/components/Blog/List
 import Components from '@/components/Components.astro';
 import BreadcrumbsSchema from '@/schema/BreadcrumbsSchema.astro';
 
-const slugPrefix = '/blog/kategoria/';
-
 export async function getStaticPaths() {
   const categories = await sanityFetch<{ slug: string; name: string }[]>({
     query: `
@@ -17,11 +15,11 @@ export async function getStaticPaths() {
       }
     `
   });
-  return categories?.map(({ slug }) => ({ params: { category: slug.replace(slugPrefix, '') } }));
+  return categories?.map(({ slug }) => ({ params: { category: slug.replace('/blog/kategoria/', '') } }));
 }
 
 const { category: _category } = Astro.params;
-const categorySlug = `${slugPrefix}${_category}`;
+const categorySlug = `/blog/kategoria/${_category}`;
 
 const data = await pageFetch<{
   listing: ListingProps

@@ -7,17 +7,15 @@ import Content, { ContentQuery, type ContentProps } from '@/components/Blog/Post
 import BreadcrumbsSchema from '@/schema/BreadcrumbsSchema.astro';
 import BlogPostingSchema from '@/schema/BlogPostingSchema.astro';
 
-const slugPrefix = '/blog/';
-
 export async function getStaticPaths() {
   const blogPosts = await sanityFetch<string[]>({
     query: `*[_type == 'BlogPost_Collection'][].slug.current`,
   });
-  return blogPosts?.map(slug => ({ params: { slug: slug.replace(slugPrefix, '') } }));
+  return blogPosts?.map(slug => ({ params: { slug: slug.replace('/blog/', '') } }));
 }
 
 const { slug: _slug } = Astro.params;
-const blogPostSlug = `${slugPrefix}${_slug}`;
+const blogPostSlug = `/blog/${_slug}`;
 
 const data = await pageFetch<{
   postContent: ContentProps;
