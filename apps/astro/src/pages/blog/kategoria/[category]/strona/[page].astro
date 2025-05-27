@@ -21,7 +21,7 @@ export async function getCategoryData() {
 
 export async function getStaticPaths() {
   const categories = await getCategoryData();
-  return categories.flatMap(({ slug, count }) => {
+  return categories?.flatMap(({ slug, count }) => {
     const totalPages = Math.ceil(count / POSTS_PER_PAGE);
     const category = slug.replace('/blog/kategoria/', '');
     return Array.from({ length: totalPages - 1 }, (_, i) => ({
