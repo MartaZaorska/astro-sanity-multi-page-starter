@@ -16,7 +16,3 @@ Then, update project-specific values with your project details in the following 
 - `/apps/astro/src/global/constants.ts`
 
 Also, make sure to modify `/apps/astro/src/pages/api/contact.ts` with the correct email addresses or endpoints used for handling contact form submissions.
-
-## Customization
-
-Feel free to add, remove, or modify components, pages, and schemas to tailor the starter to your needs.
