@@ -1,10 +1,5 @@
 {
   "name": "astro-sanity-multi-page-starter",
-  "author": {
-    "name": "Marta Zaorska",
-    "email": "marta.zaorska2@gmail.com",
-    "url": "https://github.com/MartaZaorska"
-  },
   "private": true,
   "scripts": {
     "build": "dotenv -- turbo build",
