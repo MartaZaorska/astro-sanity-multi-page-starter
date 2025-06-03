@@ -24,7 +24,8 @@ export const POST: APIRoute = async ({ request }) => {
   const { email, message, legal } = (await request.json()) as Props;
 
   try {
-    if (!REGEX.email.test(email) || !message || !legal) throw new HTTPError('Missing required fields');
+    if (!REGEX.email.test(email) || !message || !legal)
+      throw new HTTPError('Missing required fields');
 
     const HTMLTemplate = `
       <p>Adres e-mail: <b>${email}</b></p>
@@ -40,7 +41,7 @@ export const POST: APIRoute = async ({ request }) => {
       },
       body: JSON.stringify({
         from: 'Acme <onboarding@resend.dev>', //'Formularz kontaktowy NAZWA <formularz@sending.nazwa.pl>'
-        to: 'marta.zaorska2@gmail.com', //'admin@nazwa.pl'
+        to: '', //'admin@nazwa.pl'
         reply_to: email,
         subject: 'Wiadomość z formularza kontaktowego NAZWA',
         html: HTMLTemplate,

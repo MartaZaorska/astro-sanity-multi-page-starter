@@ -1,6 +1,5 @@
 /**
  * Global declaration of theme color in HEX format.
- * This color is used for theming purposes across the application.
  * @constant
  * @type {string}
  */
@@ -8,7 +7,6 @@ export const THEME_COLOR: string = '#ffffff';
 
 /**
  * Global declaration of background color in HEX format.
- * This color is used for the background across the application.
  * @constant
  * @type {string}
  */
@@ -16,7 +14,6 @@ export const BACKGROUND_COLOR: string = '#ffffff';
 
 /**
  * Global declaration of the locale (language) for the application.
- * This constant is used to set the language attribute in the HTML tag.
  * @constant
  * @type {string}
  */
@@ -24,7 +21,6 @@ export const LOCALE: string = 'pl';
 
 /**
  * Global declaration of the domain for the application.
- * This constant is used for constructing full URLs and determining external links.
  * @constant
  * @type {string}
  */
@@ -32,7 +28,6 @@ export const DOMAIN: string = 'http://localhost:4321';
 
 /**
  * Global declaration of the default title for the application.
- * This constant is used as a fallback title when a specific page title is not provided.
  * @constant
  * @type {string}
  */
@@ -40,8 +35,6 @@ export const DEFAULT_TITLE: string = 'Astro Sanity Multi Page Starter';
 
 /**
  * Global declaration of the default description for the application.
- * This constant is used as a fallback description when a specific page description is not provided.
- * It's typically used in meta tags for SEO purposes.
  * @constant
  * @type {string}
  */
@@ -63,7 +56,6 @@ export const REGEX: { email: RegExp; phone: RegExp; string: RegExp } = {
 
 /**
  * Global declaration of the Sanity dataset.
- * This constant is used for fetching data from Sanity.
  * @constant
  * @type {string}
  */
@@ -71,11 +63,10 @@ export const DATASET: string = 'production';
 
 /**
  * Global declaration of the Sanity API version.
- * This constant is used for fetching data from Sanity.
  * @constant
  * @type {string}
  */
-export const API_VERSION: string = '2025-05-12';
+export const API_VERSION: string = '2025-06-03';
 
 /**
  * The initial number of posts displayed on the page.
